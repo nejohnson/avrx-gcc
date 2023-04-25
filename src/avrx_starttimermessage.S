@@ -44,10 +44,6 @@ http://www.gnu.org/copyleft/lgpl.html
         _FUNCTION(AvrXStartTimerMessage)
 
 AvrXStartTimerMessage:
-#ifdef __IAR_SYSTEMS_ASM__
-        ld      tmp2, Y+
-        ld      tmp3, Y+                ; recover P3 and clear stack
-#endif
         subi    p2l, lo8(-0)
         sbci    p2h, hi8(-0)
         brne    axstm0

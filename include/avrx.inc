@@ -22,46 +22,7 @@ Author: Larry Barello
 // C only file when using io.h for assembly code.  io.h called within
 // avrx-io.h
 #define _IOMACROS_H_
-#include "avrx-io.h"
-
-#ifdef __IAR_SYSTEMS_ASM__
-
-__global  MACRO Label, Size
-//        EXTERN  `?<Segment init: NEAR_Z>`
-//	REQUIRE `?<Segment init: NEAR_Z>`
-        PUBLIC Label
-        RSEG NEAR_Z:DATA:NOROOT(0)
-Label:  DS Size
-        ENDM
-
-__static MACRO Label, Size
-//        EXTERN  `?<Segment init: NEAR_Z>`
-//	REQUIRE `?<Segment init: NEAR_Z>`
-        RSEG NEAR_Z:DATA:NOROOT(0)
-Label:  DS Size
-        ENDM
-
-#  define _GLOBAL(Label, Size) __global Label, Size
-#  define _STATIC(Label, Size) __static Label, Size
-#  define _DATASECTION RSEG AVRXDATA:DATA
-#  define _CODESECTION RSEG CODE:CODE
-#  define _FUNCTION(A) PUBLIC A
-#  define _ENDFUNC
-#  define _PUBLIC(A) PUBLIC A
-#  define _EXTERN(A) EXTERN A
-#  define _MODULE(A) MODULE A
-#  define _ENDMOD ENDMOD
-#  define _END END
-#  define lo8_pm(A) LOW(A/2)
-#  define hi8_pm(A) HIGH(A/2)
-#  define lo8(A) LOW(A)
-#  define hi8(A) HIGH(A)
-#  define _DB DB
-#  define _EQU(A,B) A: EQU B
-#  define _ALIGN EVEN
-#  define _SFR_IO_ADDR(A) (A)   /* IAR does not use this */
-
-#else   /*avr-gcc*/
+#include <avr/io.h> 
 
 #  if !defined(_SFR_IO_ADDR)      /* GCC 3.2 compatibility */
 #    define _SFR_IO_ADDR(A) (A)   /* earlier compilers do not use this */
@@ -85,7 +46,6 @@ Label:  DS Size
 #  define _EQU(A,B) .equ A, B
 #  define _ALIGN .balign 2
 
-#endif
 
 #ifndef BV
 #define BV(A) (1<<A)
@@ -114,17 +74,6 @@ Label:  DS Size
 #define _R0     2
 #define _SREG   1       /* SP points below last saved item */
 
-#ifdef __IAR_SYSTEMS_ASM__
-
-#  define _p1l     18
-#  define _p1h     19
-#  define _p2l     22
-#  define _p2h     23
-#  define _r1l     18
-#  define _r1h     19
-
-#else   /* avr-gcc */
-
 #  define _p1l     26
 #  define _p1h     27
 #  define _p2l     24
@@ -132,7 +81,6 @@ Label:  DS Size
 #  define _r1l     26
 #  define _r1h     27
 
-#endif
 
 /* ******** AVRX kernel data structure offsets
    These are offsets into a slab of memory called "AvrXKernelData"
@@ -145,13 +93,8 @@ Label:  DS Size
 #define Running 2	/* Current running task */
 #define AvrXStack 4	/* User defined stack location */
 #define SysLevel 6	/* re-entry counter into kernel context */
-#define AvrXCStack 7	/* IAR/ICC C Parameter stack */
 
-#ifdef  __IAR_SYSTEMS_ASM__
-#	define AvrXKernelDataSz 9
-#else
 #	define AvrXKernelDataSz 7
-#endif
 
 /* ******** TCB (Task Control Block) offsets */
 

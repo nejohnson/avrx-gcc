@@ -57,27 +57,6 @@ Revision History
 #  define BV(A) (1<<A)
 #endif
 
-#ifdef __IAR_SYSTEMS_ICC__
-
-#  define FLASH  __flash
-#  define EEPROM __eeprom
-#  define NAKEDFUNC(A) __C_task __root void A(void)
-#  define CTASKFUNC(A) __C_task __root void A(void)
-#  define INTERFACE __version_1
-
-/* Transform GCC input and output routines into direct access for IAR */
-
-#  define outp(A,B) B = (A)
-#  define inp(A) A
-#  define cbi(P, B) P &= ~BV(B)
-#  define sbi(P, B) P |= BV(B)
-#  define BeginCritical() __disable_interrupt()
-#  define EndCritical()   __enable_interrupt()
-#  define _SFR_IO_ADDR(A) A
-#  define _SFR_MEM_ADDR(A) A
-
-#else   /* Gcc */
-
 #  define FLASH  __attribute__ ((progmem))
 #  define EEPROM __attribute__ ((section(".eeprom")))
 #  define NAKED  __attribute__ ((naked))
@@ -95,8 +74,6 @@ Revision History
 #  define cbi(P, B) P &= ~BV(B)
 #  define sbi(P, B) P |= BV(B)
 
-
-#endif
 
 /*
     void * AvrXSetKernelStack(char *newstack)
@@ -126,9 +103,6 @@ struct AvrXKernelData
     struct ProcessID *Running;
     void             *AvrXStack;
     unsigned char    SysLevel;
-#ifdef __IAR_SYSTEMS_ICC__
-    void    		*AvrXCStack;
-#endif
 };
 
 
@@ -248,12 +222,7 @@ INTERFACE pMessageControlBlock AvrXCancelTimerMessage(pTimerMessageBlock, pMessa
 typedef struct
 {
     void *r_stack;          		// Start of stack (top address-1)
-#ifdef __IAR_SYSTEMS_ICC__
-	void (__C_task *start) (void); 	// Entry point of code
-    void *c_stack;
-#else
     void (*start) (void);   		// Entry point of code
-#endif
     pProcessID pid;         		// Pointer to Process ID block
     unsigned char priority;       	// Priority of task (0-255)
 }
@@ -279,22 +248,6 @@ TCB(start)
 */
 
 #define MINCONTEXT 35           // 32 registers, return address and SREG
-#ifdef __IAR_SYSTEMS_ICC__
-#  define AVRX_GCC_TASK(A, B, C)
-#  define AVRX_IAR_TASK(start, c_stack, r_stack, priority) \
-    char start ## Stk [c_stack + r_stack + MINCONTEXT ]; \
-    CTASKFUNC(start); \
-    ProcessID start ## Pid; \
-    TaskControlBlock start ## Tcb = \
-    { \
-        &start##Stk[sizeof(start##Stk)-1] , \
-        start, \
-        &start##Stk[c_stack] , \
-        &start##Pid, \
-        priority \
-    }
-#else
-#  define AVRX_IAR_TASK(A, B, C, D)
 #  define AVRX_GCC_TASK(start, c_stack, priority)	\
     char start ## Stk [c_stack + MINCONTEXT] ; \
     CTASKFUNC(start); \
@@ -306,19 +259,10 @@ TCB(start)
         &start##Pid, \
         priority \
     }
-#endif
 
-#ifdef __IAR_SYSTEMS_ICC__
-#   define AVRX_GCC_TASKDEF(A, B, C)
-#   define AVRX_IAR_TASKDEF(start, c_stack, r_stack, priority) \
-    AVRX_IAR_TASK(start, c_stack, r_stack, priority); \
-    CTASKFUNC(start)
-#else
-#   define AVRX_IAR_TASKDEF(A, B, C, D)
 #   define AVRX_GCC_TASKDEF(start, c_stack, priority) \
     AVRX_GCC_TASK(start, c_stack, priority); \
     CTASKFUNC(start)
-#endif
 
 #define AVRX_SIGINT(vector)\
   NAKEDFUNC(vector)

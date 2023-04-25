@@ -34,7 +34,6 @@ http://www.gnu.org/copyleft/lgpl.html
 
 */
 /*
-#ifndef  __IAR_SYSTEMS_ASM__
 // - experiment to see if GCC will do symbolic debugging
 // This works, but the source has to be in the same directory as the
 // .cof file for the resulting application.  If not, you can still "open"
@@ -46,7 +45,6 @@ http://www.gnu.org/copyleft/lgpl.html
 	.section .text,"ax","progbits"
 	.stabs  "",100,0,0,IntProlog
 	.stabs  "avrx_tasking.s",100,0,0,IntProlog
-#endif
 */
         _MODULE(avrx_tasking)
 ;+
@@ -63,10 +61,10 @@ http://www.gnu.org/copyleft/lgpl.html
 ;   broken for IAR and maybe even GCC if the assemblers don't pack
 ;   the data on byte boundaries.
 ;-
-        _DATASECTION
+_DATASECTION
 // This has been moved to AvrXKernel.c
 //	_GLOBAL(AvrXKernelData, AvrXKernelDataSz)
-        _CODESECTION
+_CODESECTION
 ;+
 ; --------------------------------------------------
 ; void IntProlog(void)
@@ -90,56 +88,48 @@ http://www.gnu.org/copyleft/lgpl.html
 ;		in user mode.  Don't put any code into the IDLE task - it will break!
 ;
 ;-
-	_FUNCTION(IntProlog)
+_FUNCTION(IntProlog)
 
 IntProlog:                      ; 3 cycles
-	push	R29
-	push	R28
-	push	R27
-	push	R26
-	push	R25
+push	R29
+push	R28
+push	R27
+push	R26
+push	R25
 
-	
-	ldi	Yh, hi8(AvrXKernelData)
-	ldi	Yl, lo8(AvrXKernelData)
 
-	in	R25, _SFR_IO_ADDR(SREG)		; Save flags
+ldi	Yh, hi8(AvrXKernelData)
+ldi	Yl, lo8(AvrXKernelData)
 
-	ldd	Xl, Y+SysLevel
-	subi	Xl, lo8(-1)		; Carry set if results 0
-	std	Y+SysLevel, Xl		; if already in kernel, then save context
-	
-	brcs	SaveContext
+in	R25, _SFR_IO_ADDR(SREG)		; Save flags
 
-	ldd	Xl, Y+Running+NextL	; Check if current task = IDLE
-	ldd	Xh, Y+Running+NextH
-	or	Xh, Xl
-	
-	brne	SaveContext		; Carry cleared if results 0
-        ;
-        ; When interrupting IDLE, just reset the stack pointer to PRIOR the interrupt.
-        ; in Epilog, if still IDLE, control will return to the start of the IDLE loop.
-        ; I.E. we don't need the return address to IDLE, just the return address to the
-        ; caller of Prolog() (the interrupt handler).
-        ;
-        ; The code, below, is obscure, but cycle efficient.  The net effect is to reset
-        ; the stack to AvrXStack before returning to the interrupt handler.
-        ;
-        in	Yl, _SFR_IO_ADDR(SPL)	;Idle task: don't bother saving registers, etc.
-	in	Yh, _SFR_IO_ADDR(SPH)
-	ldd	Zh, Y+6         	; Get return address
-	ldd	Zl, Y+7
-	adiw	Yl, 9			; Adjust pointer
-	out	_SFR_IO_ADDR(SPL), Yl  	; This is cycle efficient, but obscure.
-	out	_SFR_IO_ADDR(SPH), Yh
-#ifdef  __IAR_SYSTEMS_ASM__
-	ldi	Yh, hi8(AvrXKernelData)  ; SFK 2/11/03 restore IAR CStack
-	ldi	Yl, lo8(AvrXKernelData)
-   	ldd	tmp0, Y+AvrXCStack+NextL
-	ldd	tmp1, Y+AvrXCStack+NextH
-   	mov   Yl, tmp0
-   	mov   Yh, tmp1
-#endif /* __IAR_SYSTEMS_ASM__ */
+ldd	Xl, Y+SysLevel
+subi	Xl, lo8(-1)		; Carry set if results 0
+std	Y+SysLevel, Xl		; if already in kernel, then save context
+
+brcs	SaveContext
+
+ldd	Xl, Y+Running+NextL	; Check if current task = IDLE
+ldd	Xh, Y+Running+NextH
+or	Xh, Xl
+
+brne	SaveContext		; Carry cleared if results 0
+;
+; When interrupting IDLE, just reset the stack pointer to PRIOR the interrupt.
+; in Epilog, if still IDLE, control will return to the start of the IDLE loop.
+; I.E. we don't need the return address to IDLE, just the return address to the
+; caller of Prolog() (the interrupt handler).
+;
+; The code, below, is obscure, but cycle efficient.  The net effect is to reset
+; the stack to AvrXStack before returning to the interrupt handler.
+;
+in	Yl, _SFR_IO_ADDR(SPL)	;Idle task: don't bother saving registers, etc.
+in	Yh, _SFR_IO_ADDR(SPH)
+ldd	Zh, Y+6         	; Get return address
+ldd	Zl, Y+7
+adiw	Yl, 9			; Adjust pointer
+out	_SFR_IO_ADDR(SPL), Yl  	; This is cycle efficient, but obscure.
+out	_SFR_IO_ADDR(SPH), Yh
 	ijmp				; ~37 cycles for IDLE task.
 
 SaveContext:
@@ -215,12 +205,6 @@ SkipDequeue:
 	out	_SFR_IO_ADDR(SPH), tmp0       ; Swap to kernel stack
 	mov	Yl, Xl
 	mov	Yh, Xh		; restore frame pointer
-#ifdef  __IAR_SYSTEMS_ASM__
-	ldd	tmp0, Z+AvrXCStack+NextL  ; SFK 2/11/03 restore IAR CStack
-   	mov   Yl, tmp0
-	ldd	tmp0, Z+AvrXCStack+NextH
-   	mov   Yh, tmp0
-#endif /* __IAR_SYSTEMS_ASM__ */
 
 AlreadyInKernel:                ; (85/102)
 	clr     R1              ; R1 = __Zero__ for Avr-gcc
@@ -349,10 +333,6 @@ AvrXSetKernelStack:
 sks1:
         sts     AvrXKernelData+AvrXStack+NextL, p1l
         sts     AvrXKernelData+AvrXStack+NextH, p1h
-#ifdef  __IAR_SYSTEMS_ASM__
-        sts     AvrXKernelData+AvrXCStack+NextL, Yl ; SFK 2/11/03 save CStack
-        sts     AvrXKernelData+AvrXCStack+NextH, Yh
-#endif /* __IAR_SYSTEMS_ASM__ */
         ijmp
 
         _ENDFUNC
@@ -384,10 +364,6 @@ AvrXRunTask:
         _FUNCTION(AvrXInitTask)
 
 AvrXInitTask:
-#ifdef __IAR_SYSTEMS_ASM__
-        mov     tmp0, Xl
-        mov     tmp1, Xh
-#endif
         mov     Zl, p1l
         mov     Zh, p1h
 
@@ -415,19 +391,8 @@ AvrXInitTask:
 #endif /* TASKEXIT */
 
         ldi     tmp2, 0
-#ifdef __IAR_SYSTEMS_ASM__
-        st      -x, tmp2        ; R31
-        st      -x, tmp2        ; R30
-        rcall   lpm_inc
-        mov     tmp3, R0
-        rcall   lpm_inc
-        st      -x, R0          ; Frame is stored in reverse order
-        st      -x, tmp3        ; lo8(c_stack)
-        ldi     tmp3, 29        ; R0-R27 and SREG get "pushed"
-#else
         ldi     tmp2, 0
         ldi     tmp3, 33        ; R0-R31 and SREG get "pushed"
-#endif
 PushRegisters:
         st      -X, tmp2
         dec     tmp3            ; Fill rest of context with Zeros
@@ -451,10 +416,6 @@ PushRegisters:
         std     Z+PidState, Xl  ; Mark state so we can "resume" pid
         std     Z+PidNext+NextH, tmp2
         std     Z+PidNext+NextL, tmp2; Clear pid.next
-#ifdef __IAR_SYSTEMS_ASM__
-        mov     Xh, tmp1
-        mov     Xl, tmp0
-#endif
         ret
 
 lpm_inc:                        ; Tiny helper...
