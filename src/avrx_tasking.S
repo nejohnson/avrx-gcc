@@ -169,10 +169,6 @@ SaveContext:
         std     Y+_R30, Zl
         std     Y+_R31, Zh      ; Swap return address with Z
 
-#ifdef SINGLESTEPSUPPORT
-	ldi	Xl, 0
-        mov	R0, Xl
-#endif /* SINGLESTEPSUPPORT */
 	brcs	AlreadyInKernel ; Flags, still good, from above.
 		
 	ldi	Zh, hi8(AvrXKernelData)
@@ -183,21 +179,6 @@ SaveContext:
 	in	Xl, _SFR_IO_ADDR(SPL)
 	std	Y+PidSP+NextH, Xh
 	std	Y+PidSP+NextL, Xl
-
-#ifdef  SINGLESTEPSUPPORT
-        ldd     tmp0, Y+PidState ; Return to caller SingleStepFlag.
-        sbrs    tmp0, SingleStep
-        rjmp    SkipDequeue
-
-        ldd     R1, Y+PidNext+NextH  ; Dequeue current task
-        std     Z+RunQueue+NextH, R1
-        ldd     R1, Y+PidNext+NextL
-        std     Z+RunQueue+NextL, R1
-        mov     R0, tmp0        ; Return to caller SingleStepFlag.
-        cbr     tmp0, BV(SingleStep)
-        std     Y+PidState, tmp0 ; Clear flag in PID
-SkipDequeue:
-#endif /* SINGLESTEPSUPPORT */
 
         ldd	tmp0, Z+AvrXStack+NextL
 	out	_SFR_IO_ADDR(SPL), tmp0
@@ -227,7 +208,6 @@ AlreadyInKernel:                ; (85/102)
 ; USES:         SysLevel
 ; CALLS:
 -*/
-        _EXTERN(GenerateInterrupt)
         _FUNCTION(Epilog)
 Epilog:
         pop     R30
@@ -254,11 +234,6 @@ _Epilog:
         ldd     Xl, Y+PidSP+NextL
         out     _SFR_IO_ADDR(SPL), Xl
         out     _SFR_IO_ADDR(SPH), Xh         ; 20 cycles
-#ifdef  SINGLESTEPSUPPORT
-        ldd     R0, Y+PidState  ; X, Y and R0 available
-        sbrc    R0, SingleStep
-        rcall   GenerateInterrupt
-#endif
 SkipTaskSwap:                   ; 20/6
         pop     R0
         out     _SFR_IO_ADDR(SREG), R0

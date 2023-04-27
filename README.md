@@ -17,8 +17,6 @@ of messages.
 * Most non-blocking services are available when in interrupt routines.
 * Time Queue Manager supports single event timers. Any process can set up a 
 timer and any process can wait on the expiration of a timer.
-* AvrX Supports single step debugging of running processes. The supplied 
-monitor uses the AvrX API to halt, step and resume processes.
 * Small: About 700-1000 words of code space needed for all features.  
 * Fast: with a 10 MHz clock rate a 10 kHz system clock rate consumes about 20% 
 of the processor while actively tracking a timer (211 cycles including the
@@ -57,9 +55,7 @@ AvrX-GCC contains approximately 40 API in the following categories:
 * Semaphores
 * Timer Management
 * Message Queues
-* Single Step Debugging support
 * Byte FIFO support with synchronization.
-
 
 # Programmer Interface
 
@@ -119,21 +115,6 @@ Message queues are defined with a Message Control Block (MCB) as the head of a q
 *	AvrXAckMessage
 *	AvrXTestMessageAck
 *	AvrXWaitMessageAck
-
-## Single Step Support
-
-AvrX has single step support that can be enabled/disabled by re-assembling the kernel. Single Step Support is enabled by defining the following variable when building the kernel library:
-
-    #define SINGLESTEPSUPPORT
-
-NOTE: the file "AvrX.h", used by C code needs the above defined as well or the size of the PID will be wrong.  
-
-A process must be halted before it can be single stepped. There are two ways to do this: first, just initialize the process without running it (AvrXInitTask), the second is to call AvrXSuspend with the target process ID. Once the target is suspended the debug API can be called
-
-*	AvrXStepNext
-*	AvrXSingleStepNext
-
-The supplied monitor has two different step options: the first being to step between blocking calls to the kernel (e.g. AvrXWaitxxxx) This was the extent of the support in early versions. The second generates an interrupt on TIMER0 before restoring the process. The process will execute one instruction before recognizing the interrupt. Upon kernel entry that process will be removed from the run queue and re-suspended. One note: every attempt was made to not affect the system clock (TIMER0) but every so often a timer tick will be lost: pending timer interrupts will be overridden by the single step interrupt.  Of course, if TIMER1 were the system clock, then there would be no conflict between Single Step and the system clock.  Also note: in order for SS to work, additional code needs to be inserted into the TIMER0 interrupt handler.  Please refer to the sample code to see how this works.
 
 ## SystemObjects
 

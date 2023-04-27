@@ -118,13 +118,7 @@ Author: Larry Barello
 #define PidState        2       /* Upper Nibble: Task flags, Lower Nibble :Priority */
 #define PidPriority     3
 #define PidSP           4       /* Context Pointer */
-#ifdef SINGLESTEPSUPPORT
-#   define bp1          6       /* Make room for two breakpoints/task */
-#   define bp2          8
-#   define PidSz        10
-#else
-#   define PidSz        6
-#endif
+#define PidSz           6
 
 /* ******* PID (Process ID) BLOCK BIT DEFINITIONS ******* */
 

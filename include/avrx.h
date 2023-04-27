@@ -6,52 +6,10 @@ avrx.h
 
 Function prototypes for AvrX C library
 
-Copyright ©1998 - 2002 Larry Barello (larry@barello.net)
+Copyright (c)1998-2002 Larry Barello (larry@barello.net)
+Copyright (c)2023      Neil Johnson
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Library General Public License for more details.
-
-You should have received a copy of the GNU Library General Public
-License along with this library; if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA  02111-1307, USA.
-
-http://www.gnu.org/copyleft/lgpl.html
-
-Author: Larry Barello
-        larry@barello.net
-
-Revision History
-	Sep 13, 2005 - lb
-		Modified TASK definitions to use the "noreturn" attribute so tasks
-		can now have frame variables.  Naked is still used on interrupts since
-		it doesn't whine about the procedure "returning".
-    Sep 15 2002 - lb
-        Modified declaration of TaskControlBlock and swapped the 'const' and 'FLASH'
-        keywords as that was, apparently, not working in GCC 3.2
-    Mar 05 2001 - lb
-        Modified declaration of Epilog() to take in account larger chips and use
-        the JMP instead of the RJMP instruction
-
-        Added kernel variable AvrXStack and an API to initialize it a pointer to
-        the current stack or a stack of your choosing.
-
-    Aug 11 2000- lb
-        The data structure for ProcessID used the macro define
-        DEBUG to conditionally enable the breakpoint structure.  That should
-        have been SINGLESTEPSUPPORT to match the assembly code.
-
-        The data structure MessageControlBlock member Data was removed.  This
-        is a vestigal data location.  See example "MessageAndData.c" for an
-        example of how to extend the MCB with user data structures.
-
+See LICENSE.txt for license details.
 */
 #if !defined(BV)
 #  define BV(A) (1<<A)
@@ -90,10 +48,6 @@ typedef struct ProcessID
     struct ProcessID  *next;
     unsigned char flags, priority;
     void *ContextPointer;
-#ifdef SINGLESTEPSUPPORT
-    unsigned char *bp1;
-    unsigned char *bp2;
-#endif
 }
 * pProcessID, ProcessID;
 
