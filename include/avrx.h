@@ -1,19 +1,31 @@
+/*
+	avrx.h
+
+	Copyright (c)1998 - 2002 Larry Barello (larry@barello.net)
+	Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
+
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Library General Public
+	License as published by the Free Software Foundation; either
+	version 2 of the License, or (at your option) any later version.
+
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Library General Public License for more details.
+
+	You should have received a copy of the GNU Library General Public
+	License along with this library; if not, write to the
+	Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+	Boston, MA  02111-1307, USA.
+
+	http://www.gnu.org/copyleft/lgpl.html
+
+*/
 #ifndef AVRXCHEADER
 #define AVRXCHEADER
 
-/*
-avrx.h
 
-Function prototypes for AvrX C library
-
-Copyright (c)1998-2002 Larry Barello (larry@barello.net)
-Copyright (c)2023      Neil Johnson
-
-See LICENSE.txt for license details.
-*/
-#if !defined(BV)
-#  define BV(A) (1<<A)
-#endif
 
 #  define FLASH  __attribute__ ((progmem))
 #  define EEPROM __attribute__ ((section(".eeprom")))
@@ -24,14 +36,9 @@ See LICENSE.txt for license details.
 #  define CTASKFUNC(A) void A(void) CTASK;\
 	void A(void)
 #  define INTERFACE
-//#  include <iomacros.h>
+
 #  define BeginCritical() asm volatile ("cli\n")
 #  define EndCritical()   asm volatile ("sei\n")
-#  define outp(A,B) B = (A)
-#  define inp(A) A
-#  define cbi(P, B) P &= ~BV(B)
-#  define sbi(P, B) P |= BV(B)
-
 
 /*
     void * AvrXSetKernelStack(char *newstack)
@@ -271,26 +278,5 @@ INTERFACE void AvrXWriteEEProm(unsigned char *, char);
 extern pTimerControlBlock _TimerQueue;
 extern unsigned char SysLevel, _TimQLevel;
 
-/*
-// AvrX Fifo facility
 
-typedef struct AvrxFifoControBlock
-{
-	pProcessID Sender;
-	pProcessID Receiver;
-	unsigned char in;
-	unsigned char out;
-	unsigned char size;
-	unsigned char data[];
-}
-pAvrXFifo, AvrXFifo;
-
-INTERFACE int	AvrXGetFifoWait(pAvrXFifo);
-INTERFACE int	AvrXGetFifo(pAvrXFifo);
-INTERFACE void	AvrXPutFifoWait(pAvrXFifo, unsigned char);
-INTERFACE int	AvrXPutFifo(pAvrXFifo, unsigned char);
-INTERFACE int	AvrXCountFifo(pAvrXFifo);
-INTERFACE void	AvrXFlushFifo(pAvrXFifo);
-INTERFACE int	AvrXPeekFifo(pAvrXFifo);
-*/
 #endif /* AVRXCHEADER */

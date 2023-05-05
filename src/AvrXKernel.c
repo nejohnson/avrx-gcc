@@ -1,13 +1,27 @@
 /*
  	AvrXKernel.c
 
- 	This file defines the primary AvrX data structures in C
- 	so the Avr-gcc debuggers can examine, trace and modify kernel
- 	data.
+	Copyright (c)1998 - 2002 Larry Barello (larry@barello.net)
+	Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
 
- 	Small, inconsequential, AvrX kernel routines are also included
- 	here for fun.
- */
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Library General Public
+	License as published by the Free Software Foundation; either
+	version 2 of the License, or (at your option) any later version.
+
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Library General Public License for more details.
+
+	You should have received a copy of the GNU Library General Public
+	License along with this library; if not, write to the
+	Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+	Boston, MA  02111-1307, USA.
+
+	http://www.gnu.org/copyleft/lgpl.html
+
+*/
 
 #include "avrx.h"
 
@@ -26,24 +40,3 @@ void AvrXHalt(void)
 	while(1);
 }
 
-#if 0
-// These routines still supplied by assembly code although these
-// versions are no bigger than the original ones.
-// These routines are not intended to be called from interrupt handlers.
-unsigned char AvrXChangePriority(pProcessID p, unsigned char priority)
-{
-	unsigned char t = p->priority;
-	p->priority = priority;
-	return t;
-}
-
-pProcessID AvrXSelf(void)
-{
-	return AvrXKernelData.RunQueue;
-}
-
-unsigned char AvrXPriority(pProcessID p)
-{
-	return p->priority;
-}
-#endif
