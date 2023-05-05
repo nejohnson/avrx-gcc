@@ -226,7 +226,7 @@ TCB(start)
     CTASKFUNC(start)
 
 #define AVRX_SIGINT(vector)\
-  NAKEDFUNC(vector)
+  ISR(vector, ISR_NAKED)
 
 #define PID(start) &start##Pid
 #define TCB(start) (&start##Tcb)
