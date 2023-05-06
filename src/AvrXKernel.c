@@ -29,14 +29,3 @@ struct AvrXKernelData AvrXKernelData;
 pTimerControlBlock _TimerQueue;
 unsigned char _TimQLevel;
 
-/*
- AvrXHalt() is included here since it is the end point of error
- catching in the kernel, so I thought it would be nice if the break-
- point was in some thing recognizable by the debugger.
-*/
-void AvrXHalt(void)
-{
-	asm ("cli\r");
-	while(1);
-}
-
