@@ -261,15 +261,14 @@ INTERFACE void Epilog(void);
 
 /*
  AvrX provides some EEPROM access routines that
- control access to the hardware via a semaphore
+ control access to the hardware via a semaphore.
  This semaphore needs to be "set" prior to using
  the access routines.
  */
-extern Mutex EEPromMutex;
-
-INTERFACE unsigned char AvrXReadEEProm(unsigned char *);
-INTERFACE unsigned int AvrXReadEEPromWord(unsigned *);
-INTERFACE void AvrXWriteEEProm(unsigned char *, char);
+INTERFACE void AvrXEEPromInit(void);
+INTERFACE uint8_t AvrXReadEEProm(const uint8_t *);
+INTERFACE uint16_t AvrXReadEEPromWord(const uint16_t *);
+INTERFACE void AvrXWriteEEProm(uint8_t *, uint8_t);
 
 /*
  Declare internal AvrX data so the Debugger can display their contents.
