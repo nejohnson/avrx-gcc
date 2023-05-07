@@ -25,6 +25,7 @@
 #ifndef AVRXCHEADER
 #define AVRXCHEADER
 
+#include <stdint.h>
 
 
 #  define FLASH  __attribute__ ((progmem))
