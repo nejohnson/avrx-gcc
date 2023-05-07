@@ -1,0 +1,7 @@
+# .gitignore - Ignore these file patterns
+
+# Object files
+*.o
+
+# Libraries
+*.a
