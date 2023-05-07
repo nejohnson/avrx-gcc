@@ -209,7 +209,7 @@ TCB(start)
 */
 
 #define MINCONTEXT 35           // 32 registers, return address and SREG
-#  define AVRX_GCC_TASK(start, c_stack, priority)	\
+#define AVRX_TASK(start, c_stack, priority)	\
     char start ## Stk [c_stack + MINCONTEXT] ; \
     CTASKFUNC(start); \
     ProcessID start ## Pid; \
@@ -221,8 +221,8 @@ TCB(start)
         priority \
     }
 
-#   define AVRX_GCC_TASKDEF(start, c_stack, priority) \
-    AVRX_GCC_TASK(start, c_stack, priority); \
+#define AVRX_TASKDEF(start, c_stack, priority) \
+    AVRX_TASK(start, c_stack, priority); \
     CTASKFUNC(start)
 
 #define AVRX_SIGINT(vector)\
