@@ -1,5 +1,5 @@
 /*
-	avrx.h
+	avrx.h - AvrX Public Interface Definitions
 
 	Copyright (c)1998 - 2002 Larry Barello (larry@barello.net)
 	Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
@@ -20,7 +20,6 @@
 	Boston, MA  02111-1307, USA.
 
 	http://www.gnu.org/copyleft/lgpl.html
-
 */
 #ifndef AVRXCHEADER
 #define AVRXCHEADER

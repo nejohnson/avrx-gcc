@@ -1,26 +1,28 @@
-#include        "avrx.inc"
 /*
-Copyright ©1998 - 2002 Larry Barello (larry@barello.net)
+	avrx_testsemaphore.S
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
+	Copyright (C)1998 - 2002 Larry Barello (larry@barello.net)
+	Copyright (C)2023        Neil Johnson (neil@njohnson.co.uk)
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Library General Public License for more details.
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Library General Public
+	License as published by the Free Software Foundation; either
+	version 2 of the License, or (at your option) any later version.
 
-You should have received a copy of the GNU Library General Public
-License along with this library; if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA  02111-1307, USA.
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Library General Public License for more details.
 
-http://www.gnu.org/copyleft/lgpl.html
+	You should have received a copy of the GNU Library General Public
+	License along with this library; if not, write to the
+	Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+	Boston, MA  02111-1307, USA.
 
-
+	http://www.gnu.org/copyleft/lgpl.html
 */
+#include        "avrx.inc"
+
         _MODULE(avrx_testsemaphore)
         _CODESECTION
 
@@ -70,7 +72,6 @@ AvrXTestSemaphore:
         in	tmp0, _SFR_IO_ADDR(SREG)
         push	tmp0
 
-;        BeginCritical
         ldd     tmp0, Z+NextL
         ldd     tmp1, Z+NextH
         sub     tmp0, p1l
@@ -79,21 +80,17 @@ AvrXTestSemaphore:
 
         brlo    aits00          ; if > _DONE return 2
         subi    r1l, lo8(-2)	; very tricky... = 3
-;        sbci    r1h, hi8(-2)	; falls through and decrements.
 aits00:
         subi    r1l, lo8(1)	;
-;        sbci    r1h, hi8(1)    ; if < _DONE return 0
-	pop	tmp0
-	out	_SFR_IO_ADDR(SREG), tmp0
-	ret
-;        EndCriticalReturn
+		pop	tmp0
+		out	_SFR_IO_ADDR(SREG), tmp0
+		ret
 aits01:
         std     Z+NextH, tmp0    ; Store _PEND (0)
         std     Z+NextL, tmp1    ; Return _DONE (R25:R24)
-	pop	tmp0
-	out	_SFR_IO_ADDR(SREG), tmp0
-	ret
-;        EndCriticalReturn
+		pop	tmp0
+		out	_SFR_IO_ADDR(SREG), tmp0
+		ret
 
         _ENDFUNC
         _END

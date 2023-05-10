@@ -1,31 +1,32 @@
-#include        "avrx.inc"
 /*
-Copyright ©1998 - 2002 Larry Barello (larry@barello.net)
+	avrx_suspend.S
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
+	Copyright (C)1998 - 2002 Larry Barello (larry@barello.net)
+	Copyright (C)2023        Neil Johnson (neil@njohnson.co.uk)
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Library General Public License for more details.
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Library General Public
+	License as published by the Free Software Foundation; either
+	version 2 of the License, or (at your option) any later version.
 
-You should have received a copy of the GNU Library General Public
-License along with this library; if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA  02111-1307, USA.
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Library General Public License for more details.
 
-http://www.gnu.org/copyleft/lgpl.html
+	You should have received a copy of the GNU Library General Public
+	License along with this library; if not, write to the
+	Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+	Boston, MA  02111-1307, USA.
 
-
+	http://www.gnu.org/copyleft/lgpl.html
 */
+#include        "avrx.inc"
 
         _MODULE(avrx_suspend)
         _EXTERN(_Epilog)
         _EXTERN(IntProlog)
-        _EXTERN(AvrXKernelData)		// Added 9/13/05 lb
+        _EXTERN(AvrXKernelData)
         _EXTERN(_RemoveObject)
 
         _CODESECTION
@@ -48,8 +49,6 @@ http://www.gnu.org/copyleft/lgpl.html
 ;               queue, then marks suspended.  _QueuePid will take care
 ;               of this for pids queued elsewhere when they become
 ;               eligable for running.
-;
-; 20020604 - modified to use AvrXKernelData structure
 -*/
         _FUNCTION(AvrXBreakpoint)
 

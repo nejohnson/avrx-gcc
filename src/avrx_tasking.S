@@ -1,69 +1,31 @@
+/*
+	avrx_tasking.S
+	
+	Copyright (C)1998 - 2002 Larry Barello (larry@barello.net)
+	Copyright (C)2023        Neil Johnson (neil@njohnson.co.uk)
+
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Library General Public
+	License as published by the Free Software Foundation; either
+	version 2 of the License, or (at your option) any later version.
+
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Library General Public License for more details.
+
+	You should have received a copy of the GNU Library General Public
+	License along with this library; if not, write to the
+	Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+	Boston, MA  02111-1307, USA.
+
+	http://www.gnu.org/copyleft/lgpl.html
+*/
+
 #include        "avrx.inc"
-/*
-Copyright ©1998 - 2002 Larry Barello (larry@barello.net)
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Library General Public License for more details.
-
-You should have received a copy of the GNU Library General Public
-License along with this library; if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA  02111-1307, USA.
-
-http://www.gnu.org/copyleft/lgpl.html
-
-
-        Revision History
-20050913 - Modified QueuePid() to preserve the I flag across critical sections.
-20020907 - Added _SFR_IO_ADDR() macro to all I/O accesses for GCC 3.2
-20020603- Initial rewrite of _Prolog to skip context push when in idle task.
-	- modify _QueuePid to return status if top of run queue changed.
-
-20010515- Added support for IAR c_stack (initialize Y in task def)
-20010403- Ported to avrx-ctoasm.inc
-
-20010307- Moved AvrXStack into RAM variable so it can be set from main().
-        - Added function AvrXSetKernelStack
-
-*/
-/*
-// - experiment to see if GCC will do symbolic debugging
-// This works, but the source has to be in the same directory as the
-// .cof file for the resulting application.  If not, you can still "open"
-// it in the studio project view and then navigate to the source.
-// NB: You need to comment out the _MODULE() line, below to get it to work
-// as studio only knows about one .text section to look for code.
-
-	.file	"avrx_tasking.s"
-	.section .text,"ax","progbits"
-	.stabs  "",100,0,0,IntProlog
-	.stabs  "avrx_tasking.s",100,0,0,IntProlog
-*/
         _MODULE(avrx_tasking)
-;+
-;----------------------------------------------------
-; Critical Data Structures (now a data structure, see avrx.inc for offsets
-;
-; - RunQueue is the head of the run queue.
-; - Running is current running task - once inside a Prolog/Epilog
-;   section, the RunQueue might get re-arranged so we need to track
-;   who we are.
-; - Syslevel is a counter tracking how many times we have reentered
-;   the kernel, or, how many interrupts are nested (same thing).
-; - Offsets are for index access to kernel data - this is probably
-;   broken for IAR and maybe even GCC if the assemblers don't pack
-;   the data on byte boundaries.
-;-
-_DATASECTION
-// This has been moved to AvrXKernel.c
-//	_GLOBAL(AvrXKernelData, AvrXKernelDataSz)
+
 _CODESECTION
 ;+
 ; --------------------------------------------------
@@ -88,52 +50,52 @@ _CODESECTION
 ;		in user mode.  Don't put any code into the IDLE task - it will break!
 ;
 ;-
-_FUNCTION(IntProlog)
+		_FUNCTION(IntProlog)
 
 IntProlog:                      ; 3 cycles
-push	R29
-push	R28
-push	R27
-push	R26
-push	R25
+		push	R29
+		push	R28
+		push	R27
+		push	R26
+		push	R25
 
 
-ldi	Yh, hi8(AvrXKernelData)
-ldi	Yl, lo8(AvrXKernelData)
+		ldi		Yh, hi8(AvrXKernelData)
+		ldi		Yl, lo8(AvrXKernelData)
 
-in	R25, _SFR_IO_ADDR(SREG)		; Save flags
+		in		R25, _SFR_IO_ADDR(SREG)		; Save flags
 
-ldd	Xl, Y+SysLevel
-subi	Xl, lo8(-1)		; Carry set if results 0
-std	Y+SysLevel, Xl		; if already in kernel, then save context
+		ldd		Xl, Y+SysLevel
+		subi	Xl, lo8(-1)		; Carry set if results 0
+		std		Y+SysLevel, Xl		; if already in kernel, then save context
 
-brcs	SaveContext
+		brcs	SaveContext
 
-ldd	Xl, Y+Running+NextL	; Check if current task = IDLE
-ldd	Xh, Y+Running+NextH
-or	Xh, Xl
+		ldd		Xl, Y+Running+NextL	; Check if current task = IDLE
+		ldd		Xh, Y+Running+NextH
+		or		Xh, Xl
 
-brne	SaveContext		; Carry cleared if results 0
-;
-; When interrupting IDLE, just reset the stack pointer to PRIOR the interrupt.
-; in Epilog, if still IDLE, control will return to the start of the IDLE loop.
-; I.E. we don't need the return address to IDLE, just the return address to the
-; caller of Prolog() (the interrupt handler).
-;
-; The code, below, is obscure, but cycle efficient.  The net effect is to reset
-; the stack to AvrXStack before returning to the interrupt handler.
-;
-in	Yl, _SFR_IO_ADDR(SPL)	;Idle task: don't bother saving registers, etc.
-in	Yh, _SFR_IO_ADDR(SPH)
-ldd	Zh, Y+6         	; Get return address
-ldd	Zl, Y+7
-adiw	Yl, 9			; Adjust pointer
-out	_SFR_IO_ADDR(SPL), Yl  	; This is cycle efficient, but obscure.
-out	_SFR_IO_ADDR(SPH), Yh
-	ijmp				; ~37 cycles for IDLE task.
+		brne	SaveContext		; Carry cleared if results 0
+		;
+		; When interrupting IDLE, just reset the stack pointer to PRIOR the interrupt.
+		; in Epilog, if still IDLE, control will return to the start of the IDLE loop.
+		; I.E. we don't need the return address to IDLE, just the return address to the
+		; caller of Prolog() (the interrupt handler).
+		;
+		; The code, below, is obscure, but cycle efficient.  The net effect is to reset
+		; the stack to AvrXStack before returning to the interrupt handler.
+		;
+		in		Yl, _SFR_IO_ADDR(SPL)	;Idle task: don't bother saving registers, etc.
+		in		Yh, _SFR_IO_ADDR(SPH)
+		ldd		Zh, Y+6         	; Get return address
+		ldd		Zl, Y+7
+		adiw	Yl, 9			; Adjust pointer
+		out		_SFR_IO_ADDR(SPL), Yl  	; This is cycle efficient, but obscure.
+		out		_SFR_IO_ADDR(SPH), Yh
+		ijmp				; ~37 cycles for IDLE task.
 
 SaveContext:
-	push	R24
+		push	R24
         push    R23
         push    R22
         push    R21
@@ -160,38 +122,38 @@ SaveContext:
         push    R0
         push    R25		; SREG
 	
-	in	Yl, _SFR_IO_ADDR(SPL)
-	in	Yh, _SFR_IO_ADDR(SPH)         ; Grab frame pointer
-	
-	ldd	R25, Y+_R25	; Need to restore this register (used for SREG)
-	ldd	tmp1, Y+_RetLo
-	ldd	tmp2, Y+_RetHi
+		in		Yl, _SFR_IO_ADDR(SPL)
+		in		Yh, _SFR_IO_ADDR(SPH)         ; Grab frame pointer
+		
+		ldd		R25, Y+_R25	; Need to restore this register (used for SREG)
+		ldd		tmp1, Y+_RetLo
+		ldd		tmp2, Y+_RetHi
         std     Y+_R30, Zl
         std     Y+_R31, Zh      ; Swap return address with Z
 
-	brcs	AlreadyInKernel ; Flags, still good, from above.
-		
-	ldi	Zh, hi8(AvrXKernelData)
-	ldi	Zl, lo8(AvrXKernelData)
-	ldd	Yh, Z+Running+NextH    ; Point to running task
-	ldd	Yl, Z+Running+NextL
-	in	Xh, _SFR_IO_ADDR(SPH)
-	in	Xl, _SFR_IO_ADDR(SPL)
-	std	Y+PidSP+NextH, Xh
-	std	Y+PidSP+NextL, Xl
+		brcs	AlreadyInKernel ; Flags, still good, from above.
+			
+		ldi		Zh, hi8(AvrXKernelData)
+		ldi		Zl, lo8(AvrXKernelData)
+		ldd		Yh, Z+Running+NextH    ; Point to running task
+		ldd		Yl, Z+Running+NextL
+		in		Xh, _SFR_IO_ADDR(SPH)
+		in		Xl, _SFR_IO_ADDR(SPL)
+		std		Y+PidSP+NextH, Xh
+		std		Y+PidSP+NextL, Xl
 
-        ldd	tmp0, Z+AvrXStack+NextL
-	out	_SFR_IO_ADDR(SPL), tmp0
-	ldd	tmp0, Z+AvrXStack+NextH
-	out	_SFR_IO_ADDR(SPH), tmp0       ; Swap to kernel stack
-	mov	Yl, Xl
-	mov	Yh, Xh		; restore frame pointer
+        ldd		tmp0, Z+AvrXStack+NextL
+		out		_SFR_IO_ADDR(SPL), tmp0
+		ldd		tmp0, Z+AvrXStack+NextH
+		out		_SFR_IO_ADDR(SPH), tmp0       ; Swap to kernel stack
+		mov		Yl, Xl
+		mov		Yh, Xh		; restore frame pointer
 
 AlreadyInKernel:                ; (85/102)
-	clr     R1              ; R1 = __Zero__ for Avr-gcc
+		clr     R1              ; R1 = __Zero__ for Avr-gcc
         mov     Zl, tmp1        ; scratch in IARICC
         mov     Zh, tmp2
-	ijmp			; Return to caller (89/106)
+		ijmp			; Return to caller (89/106)
         _ENDFUNC
 
 /*+
@@ -213,14 +175,15 @@ Epilog:
         pop     R30
         pop     R30
         _ENDFUNC
-	_FUNCTION(_Epilog)
+		
+		_FUNCTION(_Epilog)
 _Epilog:
-	ldi	Zl, lo8(AvrXKernelData)
-	ldi	Zh, hi8(AvrXKernelData)
+		ldi		Zl, lo8(AvrXKernelData)
+		ldi		Zh, hi8(AvrXKernelData)
         BeginCritical
         ldd     R16, Z+SysLevel    ; Interrupts off..
         dec     R16
-        std	Z+SysLevel, R16
+        std		Z+SysLevel, R16
         brge    SkipTaskSwap
 
         ldd     Yh, Z+RunQueue+NextH
@@ -461,25 +424,22 @@ ar00:
 _QueuePid:                              ; Kernel entry point only
         mov     Zl, p1l
         mov     Zh, p1h
-        ldi	tmp1, lo8(-1)
+        ldi		tmp1, lo8(-1)
 
         ldd     tmp0, Z+PidState          ; Xh = Priority & Flags
         andi    tmp0, (BV(SuspendBit) | BV(IdleBit)) ; if marked Suspended or idle
         brne    _qpSUSPEND
 
-;        push	Yl		; 9/13/04
-;        mov	tmp0, Yh	; preserve Y
-	push	Yl		; 9/13/04
-	push	Yh		; 9/13/04
+		push	Yl		; 9/13/04
+		push	Yh		; 9/13/04
 
         ldd     tmp2, Z+PidPriority
         ldi     Yl, lo8(AvrXKernelData+RunQueue)
         ldi     Yh, hi8(AvrXKernelData+RunQueue)
-;        BeginCritical	; 9/13/04
-	in	tmp0, _SFR_IO_ADDR(SREG)
-	cli		; 9/13/04
+		in		tmp0, _SFR_IO_ADDR(SREG)
+		cli
 _qp00:
-	inc	tmp1     		; Tmp1 = counter of insertion point.
+		inc		tmp1     		; Tmp1 = counter of insertion point.
     	mov     Zl, Yl                 	; 0 = head of run queue.
         mov     Zh, Yh
         ldd     Yl, Z+PidNext+NextL
@@ -496,21 +456,17 @@ _qp01:
         mov     Zl, p1l
         std     Z+NextH, Yh     ; Object->Next = Next
         std     Z+NextL, Yl
-;        pop     Yl		; 9/13/04
-;        mov     Yh, tmp0	; 9/13/04
-	pop	Yh		; 9/13/05
-	pop	Yl		; 9/13/04
-        mov	r1l, tmp1
-;        EndCriticalReturn	; 9/13/04
-	out	_SFR_IO_ADDR(SREG), tmp0
-	ret			; 9/13/04
+		pop		Yh		; 9/13/05
+		pop		Yl		; 9/13/04
+        mov		r1l, tmp1
+		out		_SFR_IO_ADDR(SREG), tmp0
+		ret			; 9/13/04
 
 _qpSUSPEND:
-	mov	r1l, tmp1
+		mov		r1l, tmp1
         sbr     tmp0, BV(SuspendedBit)  ; Mark suspended and return
         std     Z+PidState, tmp0
-;        EndCriticalReturn	; 9/13/04
-	ret			; 9/13/04
+		ret			; 9/13/04
 
         _ENDFUNC
         _END

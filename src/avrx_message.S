@@ -1,12 +1,28 @@
-#include        "avrx.inc"
 /*
-        Copyright 1999-2001, Larry Barello
-        larry@barello.net
+	avrx_message.S
 
-REVISION HISTORY
-        20010403 - Initial update for avrx-ctoasm.inc port
+	Copyright (C)1998 - 2002 Larry Barello (larry@barello.net)
+	Copyright (C)2023        Neil Johnson (neil@njohnson.co.uk)
 
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Library General Public
+	License as published by the Free Software Foundation; either
+	version 2 of the License, or (at your option) any later version.
+
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Library General Public License for more details.
+
+	You should have received a copy of the GNU Library General Public
+	License along with this library; if not, write to the
+	Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+	Boston, MA  02111-1307, USA.
+
+	http://www.gnu.org/copyleft/lgpl.html
 */
+#include        "avrx.inc"
+
         _MODULE(avrx_message)
 
         _EXTERN(IntProlog)
@@ -58,13 +74,12 @@ AvrXSendMessage:
         _FUNCTION(AvrXIntSendMessage)
 
 AvrXIntSendMessage:
-;        rcall   AvrXResetObjectSemaphore
         mov     Zh, p1h
         mov     Zl, p1l
-        in	tmp2, _SFR_IO_ADDR(SREG)	// Critical section while preserving I
+        in		tmp2, _SFR_IO_ADDR(SREG)	// Critical section while preserving I
         cli
         rcall   _AppendObject   ; Append the message onto the queue
-	out	_SFR_IO_ADDR(SREG), tmp2
+		out		_SFR_IO_ADDR(SREG), tmp2
         rjmp    AvrXIntSetObjectSemaphore
         _ENDFUNC
 /*+

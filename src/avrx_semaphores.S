@@ -1,32 +1,28 @@
-#include        "avrx.inc"
 /*
-Copyright ©1998 - 2002 Larry Barello (larry@barello.net)
+	avrx_sempahore.S
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
+	Copyright (C)1998 - 2002 Larry Barello (larry@barello.net)
+	Copyright (C)2023        Neil Johnson (neil@njohnson.co.uk)
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Library General Public License for more details.
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Library General Public
+	License as published by the Free Software Foundation; either
+	version 2 of the License, or (at your option) any later version.
 
-You should have received a copy of the GNU Library General Public
-License along with this library; if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA  02111-1307, USA.
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Library General Public License for more details.
 
-http://www.gnu.org/copyleft/lgpl.html
+	You should have received a copy of the GNU Library General Public
+	License along with this library; if not, write to the
+	Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+	Boston, MA  02111-1307, USA.
 
-
-REVISION HISTORY
-20050913 - Modified AvrXSetSemaphore() to work for both task and kernel
-	   context code.  Also preserve I flag across critical sections.
-
-20010403- Ported to avrx-ctoasm.inc
-
+	http://www.gnu.org/copyleft/lgpl.html
 */
+#include        "avrx.inc"
+
         _MODULE(avrx_semaphores)
 
         _EXTERN(IntProlog)
@@ -54,7 +50,7 @@ REVISION HISTORY
 ; NOTES:        - 6/28/00 Changed code to only do IntProlog/Epilog
 ;               if Semaphore is _PEND or > _DONE
 ;               - Must stay critical through entire routine so we
-;               don't "append" ourselves to a "DONE" semaphore
+;               do not "append" ourselves to a "DONE" semaphore
 ;               - Because of above, can assume the running code is
 ;               at the top of the run queue (change code later..)
 ;
@@ -106,9 +102,6 @@ AvrXWaitSemaphore:
         std     Z+NextH, tmp1
         EndCriticalReturn       ; and return
 aws01:
-;        subi    tmp0, lo8(-_DONE)
-;        sbci    tmp1, hi8(-_DONE); Restore semaphore
-
         rcall   IntProlog       ; Do task switch (ints disabled)
 
         ; With new code, we *can* assume we are at the top of the run queue
@@ -132,7 +125,7 @@ aws01:
 ;
 ; Sets (signals) an regular or object semaphore
 ; As of 9/13/05 can be called by AvrX interrupt handler as well as
-; a task.  It just won't reschedule if in kernel mode, or no task
+; a task.  It just will not reschedule if in kernel mode, or no task
 ; switch occured.
 ;
 ; Signals a semaphore.  If semaphore is _PEND or _DONE, just mark
@@ -187,7 +180,7 @@ axss0:
 ; USES:         everything,
 ; STACK:        2
 ; SIDE EFFECTS: Assumes p1l == r1l
-; NOTES:        Doesn't accumulate sets.  If semaphore already set, the
+; NOTES:        Does not accumulate sets.  If semaphore already set, the
 ;               just ignore it (not a counting semaphore)
 -*/
         _FUNCTION(AvrXIntSetObjectSemaphore)
@@ -204,9 +197,8 @@ AvrXIntSetSemaphore:            ; Entry point for interrupt exit routines.
         ldi     p1l, lo8(_DONE)
         ldi     p1h, hi8(_DONE)
 
-;        BeginCritical
-	in	tmp0, _SFR_IO_ADDR(SREG)
-	cli
+		in	tmp0, _SFR_IO_ADDR(SREG)
+		cli
 
         ldd     p2h, Z+NextH
         ldd     p2l, Z+NextL
@@ -217,9 +209,8 @@ AvrXIntSetSemaphore:            ; Entry point for interrupt exit routines.
         std     Z+NextH, p1h    ; Set to _DONE
 BogusSemaphore:
         ldi     r1l, lo8(-1)	; Nothing queued
-;        EndCriticalReturn
-	out	_SFR_IO_ADDR(SREG), tmp0
-	ret
+		out	_SFR_IO_ADDR(SREG), tmp0
+		ret
 
 aiss00:
         ldi     p1l, lo8(_LASTEV); Check for valid semaphore (e.g. >= $60)
@@ -230,8 +221,7 @@ aiss00:
 
         rcall   _RemoveObjectAt ; Z->Prev, p2->Next (Object)
 
-;        EndCritical
-	out	_SFR_IO_ADDR(SREG), tmp0
+		out	_SFR_IO_ADDR(SREG), tmp0
 
         mov     p1l, p2l
         mov     p1h, p2h

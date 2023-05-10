@@ -1,12 +1,25 @@
-#ifndef __AVRXINC
-#define __AVRXINC
-#include "avrx-ctoasm.inc"
 /*
+	avrx.inc
 
-Copyright ©1998-2002 Larry Barello
+	Copyright (C)1998 - 2002 Larry Barello (larry@barello.net)
+	Copyright (C)2023        Neil Johnson (neil@njohnson.co.uk)
 
-Author: Larry Barello
-        larry@barello.net
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Library General Public
+	License as published by the Free Software Foundation; either
+	version 2 of the License, or (at your option) any later version.
+
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Library General Public License for more details.
+
+	You should have received a copy of the GNU Library General Public
+	License along with this library; if not, write to the
+	Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+	Boston, MA  02111-1307, USA.
+
+	http://www.gnu.org/copyleft/lgpl.html
 
 20020907 - Added _IOMACRO_H_ definition to prevent older GCC io.h files
 	   from including C only header information
@@ -18,6 +31,12 @@ Author: Larry Barello
 	   THIS works because avrx.inc loads "io.h" which loads "sfr-defs.h"
 	   which defines _SFR_IO_ADDR() macro on the 3.2 compiler.
 */
+
+#ifndef __AVRXINC
+#define __AVRXINC
+#include "avrx-ctoasm.inc"
+
+
 // Define _IOMACROS_H_ to prevent GCC 3.02 io.h from including this
 // C only file when using io.h for assembly code.  io.h called within
 // avrx-io.h

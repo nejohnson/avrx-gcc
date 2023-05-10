@@ -1,45 +1,38 @@
-#include        "avrx.inc"
 /*
-Copyright ©1998 - 2002 Larry Barello (larry@barello.net)
+	avrx_timequeue.S
+	
+	Copyright (C)1998 - 2002 Larry Barello (larry@barello.net)
+	Copyright (C)2023        Neil Johnson (neil@njohnson.co.uk)
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Library General Public
+	License as published by the Free Software Foundation; either
+	version 2 of the License, or (at your option) any later version.
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Library General Public License for more details.
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Library General Public License for more details.
 
-You should have received a copy of the GNU Library General Public
-License along with this library; if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA  02111-1307, USA.
+	You should have received a copy of the GNU Library General Public
+	License along with this library; if not, write to the
+	Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+	Boston, MA  02111-1307, USA.
 
-http://www.gnu.org/copyleft/lgpl.html
-
-
-REVISION HISTORY
-        20010403 - Initial update for avrx-ctoasm.inc port
-
+	http://www.gnu.org/copyleft/lgpl.html
 */
+#include        "avrx.inc"
+
         _MODULE(avrx_timequeue)
-//        _PUBLIC(_TimerHandler)
         _EXTERN(AvrXIntSendMessage)
         _EXTERN(AvrXIntSetObjectSemaphore)
         _EXTERN(AvrXSetObjectSemaphore)
-        _EXTERN(AvrXIntResetObjectSemaphore)
         _EXTERN(IntProlog)
         _EXTERN(_Epilog)
         _EXTERN(AvrXWaitTimer)
 ;
 ; AvrX Time Queue Manager
 ;
-        _DATASECTION
-// These have been moved to AvrXKernel.c
-//        _GLOBAL(_TimerQueue, 2)       ; Head of the timer queue
-//        _GLOBAL(_TimQLevel,  1)       ; Recurse level of timer interrupts
 
         _CODESECTION
 /*+
@@ -79,11 +72,10 @@ AvrXStartTimer:
         sbci    p2h, hi8(-0)
         brne    CountNotZero
         rjmp    AvrXSetObjectSemaphore
+		
         _PUBLIC(CountNotZero)
 CountNotZero:
         AVRX_Prolog
-
-;        rcall   AvrXIntResetObjectSemaphore
 
         ldi     Zl, lo8(_TimerQueue)
         ldi     Zh, hi8(_TimerQueue)
@@ -148,9 +140,9 @@ ast01:
 ; Thus, the entire timer handler chain can be run with interrupts
 ; enabled.
 ;
-; Since this can be called from C code (avrx 2.5/IAR) gotta preserve everything
+; Since this can be called from C code gotta preserve everything
 ; but Z and tmp0-4.  System calls within can and do trash the trashable
-; registers, hence all the push/pop's
+; registers, hence all the push/pops
 -*/
         _FUNCTION(AvrXTimerHandler)
 
@@ -190,8 +182,6 @@ ati01:
         std     Y+NextH, Zh     ;   Zero out link
         std     Y+NextL, Zl
 
-;        push    Zl
-;        push    Zh
         ldd     p1l, Y+TcbSemaphore+NextL
         ldd     p1h, Y+TcbSemaphore+NextH
         subi    p1l, lo8(TIMERMESSAGE_EV)
@@ -208,8 +198,6 @@ ati04:
         mov     p1h, Yh
         rcall   AvrXIntSetObjectSemaphore
 ati03:
-;        pop     Zh
-;        pop     Zl
 
         adiw    Xl, 0           ;   If Next Tcb == 0 (list empty)
         breq    ati02           ;       break;

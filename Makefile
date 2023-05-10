@@ -34,7 +34,7 @@ VPATH    = $(SRCDIR)
 
 ##############################################################################
 
-CSRC =  AvrXKernel.c \
+CSRC =  avrx_kernel.c \
 		avrx_priority.c \
 		avrx_halt.c \
 		avrx_eeprom.c

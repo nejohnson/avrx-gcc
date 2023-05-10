@@ -1,12 +1,28 @@
-#include        "avrx.inc"
 /*
-	Copyright 2002, Larry Barello
-	larry@barello.net
+	avrx_reschedule.S
 
-        Revision History
-        20050913 - removed local lable - messing up IAR
-	20020604 - Modified to use AvrXKernelData structure
+	Copyright (C)1998 - 2002 Larry Barello (larry@barello.net)
+	Copyright (C)2023        Neil Johnson (neil@njohnson.co.uk)
+
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Library General Public
+	License as published by the Free Software Foundation; either
+	version 2 of the License, or (at your option) any later version.
+
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Library General Public License for more details.
+
+	You should have received a copy of the GNU Library General Public
+	License along with this library; if not, write to the
+	Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+	Boston, MA  02111-1307, USA.
+
+	http://www.gnu.org/copyleft/lgpl.html
 */
+#include        "avrx.inc"
+
         _MODULE(avrx_reschedule)
 
         _EXTERN(IntProlog)
@@ -30,19 +46,19 @@
         _FUNCTION(AvrXIntReschedule)
 
 AvrXIntReschedule:
-	lds	Zl, AvrXKernelData+RunQueue+NextL	; Grab the top of the run queue
-	lds	Zh, AvrXKernelData+RunQueue+NextH
-	adiw	Zl, 0
-	brne	air1
-	ret				; Exit if empty
+		lds		Zl, AvrXKernelData+RunQueue+NextL	; Grab the top of the run queue
+		lds		Zh, AvrXKernelData+RunQueue+NextH
+		adiw	Zl, 0
+		brne	air1
+		ret				; Exit if empty
 air1:
-	ldd	p1l, Z+NextL		; Point to the next
-	ldd	p1h, Z+NextH
-	sts	RunQueue+NextL, p1l
-	sts	RunQueue+NextH, p1h
-	rjmp	_QueuePid
+		ldd		p1l, Z+NextL		; Point to the next
+		ldd		p1h, Z+NextH
+		sts		RunQueue+NextL, p1l
+		sts		RunQueue+NextH, p1h
+		rjmp	_QueuePid
 
-	_ENDFUNC
+		_ENDFUNC
 
 ;+------------------------------------------------------------------
 ;
@@ -61,21 +77,21 @@ air1:
 ; which protects grabbing the running pointer for passing onto QueuePid.
 ;-
 
-	_FUNCTION(AvrXYield)
+		_FUNCTION(AvrXYield)
 
 AvrXYield:
-	AVRX_Prolog
-	ldi	Zl, lo8(AvrXKernelData+RunQueue)
-	ldi	Zh, hi8(AvrXKernelData+RunQueue)
-        BeginCritical                   ; 051704 - per email.
-	ldd	p2l, Z+Running+NextL
-	ldd	p2h, Z+Running+NextH
-	rcall	_RemoveObject		; Can't fail, so don't bother checking
-	EndCritical
-	mov	p1l, p2l
-	mov	p1h, p2h
-	rcall	_QueuePid		; requeue ourselves
-	rjmp	_Epilog			; jump to the new top of the queue
+		AVRX_Prolog
+		ldi		Zl, lo8(AvrXKernelData+RunQueue)
+		ldi		Zh, hi8(AvrXKernelData+RunQueue)
+		BeginCritical
+		ldd		p2l, Z+Running+NextL
+		ldd		p2h, Z+Running+NextH
+		rcall	_RemoveObject		; Can't fail, so don't bother checking
+		EndCritical
+		mov		p1l, p2l
+		mov		p1h, p2h
+		rcall	_QueuePid		; requeue ourselves
+		rjmp	_Epilog			; jump to the new top of the queue
 
-	_ENDFUNC
- 	_END
+		_ENDFUNC
+		_END

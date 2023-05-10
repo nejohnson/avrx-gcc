@@ -1,5 +1,5 @@
 /*
- 	AvrXKernel.c
+ 	avrx_kernel.c - Kernel-Private Data
 
 	Copyright (c)1998 - 2002 Larry Barello (larry@barello.net)
 	Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
@@ -20,7 +20,6 @@
 	Boston, MA  02111-1307, USA.
 
 	http://www.gnu.org/copyleft/lgpl.html
-
 */
 
 #include "avrx.h"
