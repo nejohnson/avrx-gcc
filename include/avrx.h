@@ -53,7 +53,7 @@ void *AvrXSetKernelStack(void *bval);
 typedef struct ProcessID
 {
     struct ProcessID  *next;
-    unsigned char flags, priority;
+    uint8_t flags, priority;
     void *ContextPointer;
 }
 * pProcessID, ProcessID;
@@ -63,7 +63,7 @@ struct AvrXKernelData
     struct ProcessID *RunQueue;
     struct ProcessID *Running;
     void             *AvrXStack;
-    unsigned char    SysLevel;
+    uint8_t           SysLevel;
 };
 
 
@@ -105,13 +105,10 @@ typedef struct MessageControlBlock
 {
     struct MessageControlBlock *next;
     Mutex semaphore;
-/*    unsigned char data;     08/11/00 lb */
 }
 * pMessageControlBlock, MessageControlBlock;
 
-// Lame macro...  Should just declare directly.
-
-#define AVRX_MESSAGE(A) /* 08/11/00 lb */\
+#define AVRX_MESSAGE(A) \
         MessageControlBlock A
 
 typedef struct MessageQueue
@@ -140,7 +137,7 @@ typedef struct TimerControlBlock
 {
     struct TimerControlBlock *next;
     Mutex semaphore;
-    unsigned short count;
+    uint16_t count;
 }
 * pTimerControlBlock, TimerControlBlock;
 /*
@@ -161,18 +158,18 @@ typedef struct TimerMessageBlock
 
 #define AVRX_TIMER(A) TimerControlBlock A
 
-INTERFACE void AvrXStartTimer(pTimerControlBlock, unsigned);
+INTERFACE void AvrXStartTimer(pTimerControlBlock, uint16_t);
 INTERFACE pTimerControlBlock AvrXCancelTimer(pTimerControlBlock);
-INTERFACE void AvrXDelay(pTimerControlBlock, unsigned);
+INTERFACE void AvrXDelay(pTimerControlBlock, uint16_t);
 INTERFACE void AvrXWaitTimer(pTimerControlBlock);
 INTERFACE Mutex AvrXTestTimer(pTimerControlBlock);
 
-INTERFACE void AvrXTimerHandler(void);    // Kernel Funtion called by timer ISR
+INTERFACE void AvrXTimerHandler(void);    // Kernel Function to be called by timer ISR
 
 // Special versions of timer queue elements that get sent
 // to a message queue when expired.
 
-INTERFACE void AvrXStartTimerMessage(pTimerMessageBlock timer, unsigned timeout, pMessageQueue queue);
+INTERFACE void AvrXStartTimerMessage(pTimerMessageBlock, uint16_t, pMessageQueue);
 INTERFACE pMessageControlBlock AvrXCancelTimerMessage(pTimerMessageBlock, pMessageQueue);
 
 /*
@@ -185,11 +182,11 @@ typedef struct
     void *r_stack;          		// Start of stack (top address-1)
     void (*start) (void);   		// Entry point of code
     pProcessID pid;         		// Pointer to Process ID block
-    unsigned char priority;       	// Priority of task (0-255)
+    uint8_t priority;       	// Priority of task (0-255)
 }
 FLASH const TaskControlBlock;
 /*
-    A series of macro's to ease the declaration of tasks
+    A series of macros to ease the declaration of tasks
     and access to the resulting data structures.
 
 AVRX_TASK(start, stacksz, priority)
@@ -210,7 +207,7 @@ TCB(start)
 
 #define MINCONTEXT 35           // 32 registers, return address and SREG
 #define AVRX_TASK(start, c_stack, priority)	\
-    char start ## Stk [c_stack + MINCONTEXT] ; \
+    uint8_t start ## Stk [c_stack + MINCONTEXT] ; \
     CTASKFUNC(start); \
     ProcessID start ## Pid; \
     TaskControlBlock start ## Tcb = \
@@ -236,46 +233,188 @@ TCB(start)
   extern TaskControlBlock start##Tcb; \
   extern ProcessID start##Pid
 
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXRunTask
+ *
+ *  SYNOPSIS
+ *      void AvrXRunTask(TaskControlBlock *)
+ *
+ *  DESCRIPTION
+ *      Initialises a task and then schedules it for running.
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
 INTERFACE void AvrXRunTask(TaskControlBlock *);
+
 INTERFACE pProcessID AvrXInitTask(TaskControlBlock *);
 
 INTERFACE void AvrXResume(pProcessID);
 INTERFACE void AvrXSuspend(pProcessID);
 INTERFACE void AvrXBreakPoint(pProcessID);
-INTERFACE unsigned char AvrXSingleStep(pProcessID);
-INTERFACE unsigned char AvrXSingleStepNext(pProcessID);
+INTERFACE uint8_t AvrXSingleStep(pProcessID);
+INTERFACE uint8_t AvrXSingleStepNext(pProcessID);
 
 INTERFACE void AvrXTerminate(pProcessID);
 INTERFACE void AvrXTaskExit(void);
-INTERFACE void AvrXHalt(void);     // Halt Processor (error only)
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXHalt
+ *
+ *  SYNOPSIS
+ *      void AvrXHalt(void)
+ *
+ *  DESCRIPTION
+ *      Halt the system, wait for reset
+ *
+ *  RETURNS
+ *      Never returns, it's the very last thing you ever do....
+ *
+ *****************************************************************************/
+INTERFACE void AvrXHalt(void);
 
 INTERFACE void AvrXWaitTask(pProcessID);
 INTERFACE Mutex AvrXTestPid(pProcessID);
 
-INTERFACE unsigned char AvrXPriority(pProcessID);
-INTERFACE unsigned char AvrXChangePriority(pProcessID, unsigned char);
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXPriority
+ *
+ *  SYNOPSIS
+ *      uint8_t AvrXPriority(pProcessID p)
+ *
+ *  DESCRIPTION
+ *      Get a process's current priority.
+ *
+ *  RETURNS
+ *      The process's current priority.
+ *
+ *****************************************************************************/
+INTERFACE uint8_t AvrXPriority(pProcessID);
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXChangePriority
+ *
+ *  SYNOPSIS
+ *      uint8_t AvrXChangePriority(pProcessID p, uint8_t priority)
+ *
+ *  DESCRIPTION
+ *      Changes the priority of process 'p' to 'priority'.
+ *
+ *  RETURNS
+ *      The previous priority
+ *
+ *****************************************************************************/
+INTERFACE uint8_t AvrXChangePriority(pProcessID, uint8_t);
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXSelf
+ *
+ *  SYNOPSIS
+ *      pProcessID AvrXSelf(void)
+ *
+ *  DESCRIPTION
+ *      Gets the current process's pointer to its ProcessID
+ *
+ *  RETURNS
+ *      Pointer to this process's ProcessID.
+ *      Assumes the current process is top of the run queue.
+ *
+ *****************************************************************************/
 INTERFACE pProcessID AvrXSelf(void);
+
+
 INTERFACE void IntProlog(void);
-INTERFACE void _Epilog(void);    // Not to be used for C code
 INTERFACE void Epilog(void);
 
+/*****************************************************************************/
+/*****************************************************************************/
+
 /*
- AvrX provides some EEPROM access routines that
- control access to the hardware via a semaphore.
- This semaphore needs to be "set" prior to using
- the access routines.
+ * AvrX provides some EEPROM access routines that control access to the hardware
+ * via a semaphore.  This semaphore needs to be "set" prior to using the access
+ * routines.
  */
+ 
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXEEPromInit
+ *
+ *  SYNOPSIS
+ *      void AvrXEEPromInit(void)
+ *
+ *  DESCRIPTION
+ *      Sets up the AvrX EEPROM system.
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
 INTERFACE void AvrXEEPromInit(void);
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXReadEEProm
+ *
+ *  SYNOPSIS
+ *      uint8_t AvrXReadEEProm(const uint8_t *p)
+ *
+ *  DESCRIPTION
+ *      Reads a single byte from EEPROM address 'p'
+ *
+ *  RETURNS
+ *      The read byte
+ *
+ *****************************************************************************/
 INTERFACE uint8_t AvrXReadEEProm(const uint8_t *);
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXReadEEPromWord
+ *
+ *  SYNOPSIS
+ *      uint16_t AvrXReadEEPromWord(const uint16_t *p)
+ *
+ *  DESCRIPTION
+ *      Reads a single word from EEPROM address 'p'
+ *
+ *  RETURNS
+ *      The read word
+ *
+ *****************************************************************************/
 INTERFACE uint16_t AvrXReadEEPromWord(const uint16_t *);
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXWriteEEProm
+ *
+ *  SYNOPSIS
+ *      void AvrXWriteEEProm(uint8_t *p, uint8_t b)
+ *
+ *  DESCRIPTION
+ *      Writes a single byte 'b' to EEPROM address 'p'
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
 INTERFACE void AvrXWriteEEProm(uint8_t *, uint8_t);
 
-/*
- Declare internal AvrX data so the Debugger can display their contents.
-
- */
-extern pTimerControlBlock _TimerQueue;
-extern unsigned char SysLevel, _TimQLevel;
-
-
+/*****************************************************************************/
 #endif /* AVRXCHEADER */
+/*****************************************************************************/

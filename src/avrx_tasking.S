@@ -45,9 +45,9 @@ _CODESECTION
 ; NOTES:        Does not muck with R16-R25 so passed parameters from C to
 ;               AvrX functions can be accessed directly after a call to Prolog.
 ;
-;		Special case for IDLE: Don't save context or restore context when
+;		Special case for IDLE: Do not save context or restore context when
 ;		transitioning from USER to Kernel context - it has no context when in
-;		in user mode.  Don't put any code into the IDLE task - it will break!
+;		in user mode.  Do not put any code into the IDLE task - it will break!
 ;
 ;-
 		_FUNCTION(IntProlog)
@@ -79,13 +79,13 @@ IntProlog:                      ; 3 cycles
 		;
 		; When interrupting IDLE, just reset the stack pointer to PRIOR the interrupt.
 		; in Epilog, if still IDLE, control will return to the start of the IDLE loop.
-		; I.E. we don't need the return address to IDLE, just the return address to the
+		; I.E. we do not need the return address to IDLE, just the return address to the
 		; caller of Prolog() (the interrupt handler).
 		;
 		; The code, below, is obscure, but cycle efficient.  The net effect is to reset
 		; the stack to AvrXStack before returning to the interrupt handler.
 		;
-		in		Yl, _SFR_IO_ADDR(SPL)	;Idle task: don't bother saving registers, etc.
+		in		Yl, _SFR_IO_ADDR(SPL)	;Idle task: do not bother saving registers, etc.
 		in		Yh, _SFR_IO_ADDR(SPH)
 		ldd		Zh, Y+6         	; Get return address
 		ldd		Zl, Y+7
@@ -239,14 +239,9 @@ SkipTaskSwap:                   ; 20/6
 ; here that uses registers as you will get hosed every time an interrupt occurs.
 
 _IdleTask:
-;	ldd	Yl, Z+AvrXStack+NextL
-;	ldd	Yh, Z+AvrXStack+NextH
-;	out	SPL, Yl
-;	out	SPL, Yh		; Reset kernel stack
-        BeginIdle               ; Any interrupt will EndIdle
-        EndCritical             ; Enable interrupts
+; Any interrupt will exit the Idle task
+        sei   					; Enable interrupts
         sleep                   ; Power Down..
-        EndIdle
         rjmp    _IdleTask
         _ENDFUNC
 
@@ -263,7 +258,7 @@ _IdleTask:
 AvrXSetKernelStack:
         pop     R31
         pop     R30
-        subi    p1l, 0		; May not be a high pair in IAR
+        subi    p1l, 0
         sbci    p1h, 0
         brne    sks1
         in      p1l, _SFR_IO_ADDR(SPL)
@@ -276,7 +271,7 @@ sks1:
         _ENDFUNC
 /*+
 ; --------------------------------------------------
-; *PID AvrXInitProcess(*TaskControlBlock)
+; *PID AvrXInitTask(*TaskControlBlock)
 ;
 ; Initialize the PID based upon the TCB table. 
 ;
@@ -362,7 +357,7 @@ lpm_inc:                        ; Tiny helper...
 ; actually suspended, as opposed to just being marked for suspension.
 ; Mark _SUSP to make QueuePid not queue, Mark _SUSPENDED when attempt
 ; to queue is made (e.g. not blocked on a semaphore).  This is because
-; we can't "resume" something that is blocked on a semaphore, even though
+; we cannot "resume" something that is blocked on a semaphore, even though
 ; it is marked for suspension.
 ;
 ; PASSED:       R25:24 = PID to queue

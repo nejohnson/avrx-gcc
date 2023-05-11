@@ -1,5 +1,5 @@
 /*
- 	avrx_runtask.c - Setup a task for running
+ 	avrx_runtask.c - Run a task
 
 	Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
 
@@ -23,23 +23,13 @@
 
 #include "avrx.h"
 
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXRunTask
- *
- *  SYNOPSIS
- *      void AvrXRunTask(TaskControlBlock *)
- *
- *  DESCRIPTION
- *      Initialises a task and then schedules it for running.
- *
- *  RETURNS
- *      none
- *
- *****************************************************************************/
+/*****************************************************************************/
 void AvrXRunTask(TaskControlBlock *pTCB)
 {
 	pProcessID pPID = AvrXInitTask(pTCB);
 	AvrXResume(pPID);
 }
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/

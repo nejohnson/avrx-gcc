@@ -1,5 +1,5 @@
 /*
- 	avrx_halt.c
+ 	avrx_halt.c - System Halt
 
 	Copyright (c)1998 - 2002 Larry Barello (larry@barello.net)
 	Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
@@ -25,24 +25,13 @@
 
 #include "avrx.h"
 
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXHalt
- *
- *  SYNOPSIS
- *      void AvrXHalt(void)
- *
- *  DESCRIPTION
- *      Halt the system, wait for reset
- *
- *  RETURNS
- *      Never returns, it's the very last thing you ever do....
- *
- *****************************************************************************/
+/*****************************************************************************/
 void AvrXHalt(void)
 {
 	asm ("cli\r");
 	while(1);
 }
 
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/

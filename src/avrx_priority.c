@@ -1,5 +1,5 @@
 /*
- 	avrx_priority.c
+ 	avrx_priority.c - Functions for getting and setting task priority
 
 	Copyright (c)1998 - 2002 Larry Barello (larry@barello.net)
 	Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
@@ -27,65 +27,26 @@
 
 extern struct AvrXKernelData AvrXKernelData;
 
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXChangePriority
- *
- *  SYNOPSIS
- *      unsigned char AvrXChangePriority(pProcessID p, unsigned char priority)
- *
- *  DESCRIPTION
- *      Changes the priority of process 'p' to 'priority'.
- *
- *  RETURNS
- *      The old priority
- *
- *****************************************************************************/
-unsigned char AvrXChangePriority(pProcessID p, unsigned char priority)
+/*****************************************************************************/
+uint8_t AvrXChangePriority(pProcessID p, uint8_t priority)
 {
-	unsigned char t = p->priority;
+	uint8_t t = p->priority;
 	p->priority = priority;
 	return t;
 }
 
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXSelf
- *
- *  SYNOPSIS
- *      pProcessID AvrXSelf(void)
- *
- *  DESCRIPTION
- *      Get the current process ID.
- *
- *  RETURNS
- *      Pointer to this process's ProcessID.
- *      Assumes the current process is top of the run queue.
- *
- *****************************************************************************/
+/*****************************************************************************/
 pProcessID AvrXSelf(void)
 {
 	return AvrXKernelData.RunQueue;
 }
 
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXPriority
- *
- *  SYNOPSIS
- *      unsigned char AvrXPriority(pProcessID p)
- *
- *  DESCRIPTION
- *      Get a process's priority.
- *
- *  RETURNS
- *      The process's priority.
- *
- *****************************************************************************/
-unsigned char AvrXPriority(pProcessID p)
+/*****************************************************************************/
+uint8_t AvrXPriority(pProcessID p)
 {
 	return p->priority;
 }
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/

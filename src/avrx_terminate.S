@@ -24,11 +24,11 @@
 #include        "avrx.inc"
 
         _MODULE(avrx_terminate)
+		
         _EXTERN(IntProlog)
         _EXTERN(_RemoveObject)
         _EXTERN(AvrXKernelData)
         _EXTERN(_Epilog)
-        _EXTERN(AvrXIntSetObjectSemaphore)
 
         _CODESECTION
 

@@ -234,111 +234,23 @@ SEMAPHORE BIT DEFINITIONS
         _GLOBAL(B, (Size+f_Buffersz))
 
 #ifndef AVRXCHEADER
-/*+ --------------------------------------------------
+/*+ -------------------------------------------------- 
  Handy Macros
-
- DEBUG statements are diagnostics for twiddling and output port bit
- to reflect the I bit state (interrupt latency) and when AvrX is in
- the Idle loop
--*/
-#ifdef  DEBUG           /* DEBUG is set to a PORT{ABCD} value (for twiddling output bits) */
-
-#ifndef ILED
-#define ILED            PB0
-#endif
-
-#ifndef IDLELED
-#define IDLELED         PB4
-#endif
-
-#define DEBUG_DDR       (DEBUG-1)
-
-#endif  /* DEBUG */
-
-        MACRO  Breakpoint
-#ifdef  DEBUG
-        rcall   AvrXBreakpoint
-#endif  /* DEBUG */
-        ENDM
-
-        MACRO  BeginInterrupt
-#ifdef  DEBUG
-        cbi     DEBUG, ILED
-        sbi     DEBUG, IDLELED  /* Obviously not idle... */
-#endif  /* DEBUG */
-        ENDM
-
+*/
         MACRO  EndInterrupt
-#ifdef  DEBUG
-        sbi     DEBUG, ILED
-#endif  /* DEBUG */
         reti
         ENDM
 
         MACRO BeginCritical
-#ifdef  DEBUG
-        cbi     DEBUG, ILED
-#endif  /* DEBUG */
-        cli     ;
+        cli
         ENDM
 
         MACRO  EndCritical
-#ifdef  DEBUG
-        sbi     DEBUG, ILED
-#endif  /* DEBUG */
         sei
         ENDM
 
 #define EndCriticalReturn EndInterrupt
 
-        MACRO  BeginIdle
-snore:
-#ifdef  DEBUG
-        cbi     DEBUG, IDLELED
-#endif  /* DEBUG */
-        ENDM
-
-        MACRO  EndIdle
-snooze:
-#ifdef  DEBUG
-        sbi     DEBUG, IDLELED
-#endif  /* DEBUG */
-        ENDM
-
-        MACRO  INIT_DEBUG
-#ifdef  DEBUG
-        ldi     Xl, (1<<ILED | 1<<IDLELED)
-        out     DEBUG_DDR, Xl
-        out     DEBUG, Xl
-#endif  /* DEBUG */
-        ENDM
-
-/*+ --------------------------------------------------
- Handy macros for common assembly chores
--*/
-        MACRO  SignExtend Dest, Source
-        clr     Dest
-        sbrc    Source, 7
-        com     Dest
-        ENDM
-
-        MACRO  addi reg, val
-        subi    reg, -(val)
-        ENDM
-
-        MACRO  adci reg, val
-        sbci    reg, -(val)
-        ENDM
-
-        MACRO  tstw reg
-        adiw    reg, 0
-        ENDM
-
-        MACRO  negw regh, regl
-        com     regh
-        neg     regl
-        sbci    regh, -1
-        ENDM
 /*
  Use this macro rather than a call to _Prolog, see
  version notes in AvrX.asm

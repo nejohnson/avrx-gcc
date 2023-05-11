@@ -29,7 +29,7 @@
         _EXTERN(AvrXSetObjectSemaphore)
         _EXTERN(IntProlog)
         _EXTERN(_Epilog)
-        _EXTERN(AvrXWaitTimer)
+        _EXTERN(AvrXWaitObjectSemaphore)
 ;
 ; AvrX Time Queue Manager
 ;
@@ -44,13 +44,13 @@
 ; Returns:
 ; Uses:
 ; Stack:
-; Notes:        See AvrXStartTimer, AvrXWaitTimer
+; Notes:        See AvrXStartTimer, AvrXWaitObjectSemaphore
 -*/
         _FUNCTION(AvrXDelay)
 
 AvrXDelay:
         rcall   AvrXStartTimer
-        rjmp    AvrXWaitTimer
+        rjmp    AvrXWaitObjectSemaphore
         _ENDFUNC
 /*+
 ; -----------------------------------------------

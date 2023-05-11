@@ -1,5 +1,5 @@
 /*
- 	avrx_eeprom.c
+ 	avrx_eeprom.c - Task-safe EEPROM access
 
 	Copyright (c)1998 - 2002 Larry Barello (larry@barello.net)
 	Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
@@ -29,41 +29,13 @@
 
 static Mutex EEPromMutex;
 
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXEEPromInit
- *
- *  SYNOPSIS
- *      void AvrXEEPromInit(void)
- *
- *  DESCRIPTION
- *      Sets up the AvrX EEPROM system.
- *
- *  RETURNS
- *      none
- *
- *****************************************************************************/
+/*****************************************************************************/
 void AvrXEEPromInit(void)
 {
 	AvrXSetSemaphore(&EEPromMutex); 
 }
 
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXReadEEProm
- *
- *  SYNOPSIS
- *      uint8_t AvrXReadEEProm(const uint8_t *p)
- *
- *  DESCRIPTION
- *      Reads a single byte from EEPROM address 'p'
- *
- *  RETURNS
- *      The read byte
- *
- *****************************************************************************/
+/*****************************************************************************/
 uint8_t AvrXReadEEProm(const uint8_t *p)
 {
 	uint8_t b;
@@ -76,21 +48,7 @@ uint8_t AvrXReadEEProm(const uint8_t *p)
 	return b;
 }
 
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXReadEEPromWord
- *
- *  SYNOPSIS
- *      uint16_t AvrXReadEEPromWord(const uint16_t *p)
- *
- *  DESCRIPTION
- *      Reads a single word from EEPROM address 'p'
- *
- *  RETURNS
- *      The read word
- *
- *****************************************************************************/
+/*****************************************************************************/
 uint16_t AvrXReadEEPromWord(const uint16_t *p)
 {
 	uint16_t w;
@@ -103,21 +61,7 @@ uint16_t AvrXReadEEPromWord(const uint16_t *p)
 	return w;
 }
 
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXWriteEEProm
- *
- *  SYNOPSIS
- *      void AvrXWriteEEProm(uint8_t *p, uint8_t b)
- *
- *  DESCRIPTION
- *      Writes a single byte 'b' to EEPROM address 'p'
- *
- *  RETURNS
- *      none
- *
- *****************************************************************************/
+/*****************************************************************************/
 void AvrXWriteEEProm(uint8_t *p, uint8_t b)
 {
 	AvrXWaitSemaphore(&EEPromMutex);
@@ -126,3 +70,6 @@ void AvrXWriteEEProm(uint8_t *p, uint8_t b)
 	AvrXSetSemaphore(&EEPromMutex);
 }
 
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/

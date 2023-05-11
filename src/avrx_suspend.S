@@ -37,10 +37,6 @@
 ;
 ; Mark a pid for suspension and attempt to remove from the run queue
 ;
-; AvrXBreakpoint
-;
-; Suspend Self (Running) if previously suspended (single stepped)
-;
 ; PASSED:       R25:R24 = PID
 ; RETURNS:
 ; USES:
@@ -50,18 +46,6 @@
 ;               of this for pids queued elsewhere when they become
 ;               eligable for running.
 -*/
-        _FUNCTION(AvrXBreakpoint)
-
-AvrXBreakpoint:
-        AVRX_Prolog
-        lds     Zh, AvrXKernelData+Running+NextH
-        lds     Zl, AvrXKernelData+Running+NextL
-        ldd     tmp0, Z+PidState
-        sbrc    tmp0, SuspendBit
-        rjmp    as00
-        rjmp    _Epilog
-        _ENDFUNC
-
         _FUNCTION(AvrXSuspend)
 
 AvrXSuspend:                    ; User Entry Point
