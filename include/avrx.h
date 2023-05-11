@@ -90,10 +90,24 @@ typedef pProcessID Mutex, *pMutex;     /* A mutex is basically a pointer to a pr
 INTERFACE void AvrXSetSemaphore(pMutex);
 INTERFACE void AvrXIntSetSemaphore(pMutex);
 INTERFACE void AvrXWaitSemaphore(pMutex);
-INTERFACE Mutex AvrXTestSemaphore(pMutex);
-INTERFACE Mutex AvrXIntTestSemaphore(pMutex);
-INTERFACE void AvrXResetSemaphore(pMutex);
+
+INTERFACE Mutex AvrXSetObjectSemaphore(pMutex);
+INTERFACE Mutex AvrXTestObjectSemaphore(pMutex);
+
 INTERFACE void AvrXResetObjectSemaphore(pMutex);
+#define AvrXIntResetObjectSemaphore(A) \
+			AvrXResetObjectSemaphore(A)
+
+INTERFACE Mutex AvrXTestSemaphore(pMutex);
+#define AvrXIntTestSemaphore(A) \
+			AvrXTestSemaphore(A)
+
+INTERFACE void AvrXResetSemaphore(pMutex);
+#define AvrXIntResetSemaphore(A) \
+			AvrXResetSemaphore(A)
+
+
+
 /*
     Message Queues are really an extension of Semaphore
     queue.  They can be used for mutual exlusion (have a

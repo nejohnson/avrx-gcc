@@ -45,11 +45,9 @@
 ; Notes:        It does not make sense to reset a semaphore that has
 ;               a process waiting, so just skip that situation.
 -*/
-        _PUBLIC(AvrXIntResetObjectSemaphore)
         _FUNCTION(AvrXResetObjectSemaphore)
         
 AvrXResetObjectSemaphore:
-AvrXIntResetObjectSemaphore:
         mov     Zl, p1l
         mov     Zh, p1h
         adiw    Zl, 2
@@ -57,10 +55,8 @@ AvrXIntResetObjectSemaphore:
         _ENDFUNC
         
         _FUNCTION(AvrXResetSemaphore)
-        _PUBLIC(AvrXIntResetSemaphore)
         
 AvrXResetSemaphore:
-AvrXIntResetSemaphore:
         mov     Zh, p1h
         mov     Zl, p1l
 ars00:

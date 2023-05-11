@@ -61,9 +61,7 @@ AvrXTestObjectSemaphore:
         sbci    p1h, hi8(-2)
         _ENDFUNC
 
-        _FUNCTION(AvrXIntTestSemaphore)
-        _PUBLIC(AvrXTestSemaphore)
-AvrXIntTestSemaphore:
+        _FUNCTION(AvrXTestSemaphore)
 AvrXTestSemaphore:
         mov     Zh, p1h
         mov     Zl, p1l
