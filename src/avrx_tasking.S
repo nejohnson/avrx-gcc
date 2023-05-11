@@ -277,10 +277,8 @@ sks1:
 /*+
 ; --------------------------------------------------
 ; *PID AvrXInitProcess(*TaskControlBlock)
-; *PID AvrXRunTask(*TaskControlBlock)
 ;
-; Initialize the PID based upon the TCB table.  Run Task
-; "resumes" the process as well
+; Initialize the PID based upon the TCB table. 
 ;
 ; PASSED:       R25:R24 = TCB
 ; RETURNS:      R25:R24 = PID
@@ -292,13 +290,6 @@ sks1:
 ;               2 STACK
 ;               2 Entry
 -*/
-        _FUNCTION(AvrXRunTask)
-
-AvrXRunTask:
-        rcall   AvrXInitTask
-        rjmp    AvrXResume
-        _ENDFUNC
-
         _FUNCTION(AvrXInitTask)
 
 AvrXInitTask:

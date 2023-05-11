@@ -37,7 +37,8 @@ VPATH    = $(SRCDIR)
 CSRC =  avrx_kernel.c \
 		avrx_priority.c \
 		avrx_halt.c \
-		avrx_eeprom.c
+		avrx_eeprom.c \
+		avrx_runtask.c
 
 ASRC  = avrx_canceltimer.S 			\
 		avrx_canceltimermessage.S 	\

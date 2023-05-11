@@ -237,7 +237,7 @@ TCB(start)
   extern ProcessID start##Pid
 
 INTERFACE void AvrXRunTask(TaskControlBlock *);
-INTERFACE unsigned char AvrXInitTask(TaskControlBlock *);
+INTERFACE pProcessID AvrXInitTask(TaskControlBlock *);
 
 INTERFACE void AvrXResume(pProcessID);
 INTERFACE void AvrXSuspend(pProcessID);
