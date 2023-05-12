@@ -29,7 +29,6 @@
 /*+
 ; -----------------------------------------------
 ; pMutex AvrXResetSemaphore(pMutex)
-; pMutex AvrXResetObjectSemaphore(pMutex)
 ;
 ; Force a semaphore into the _PEND state.  This is almost identical
 ; to SetSemaphore, but the end state is always _PEND rather than,
@@ -45,21 +44,11 @@
 ; Notes:        It does not make sense to reset a semaphore that has
 ;               a process waiting, so just skip that situation.
 -*/
-        _FUNCTION(AvrXResetObjectSemaphore)
-        
-AvrXResetObjectSemaphore:
-        mov     Zl, p1l
-        mov     Zh, p1h
-        adiw    Zl, 2
-        rjmp    ars00
-        _ENDFUNC
-        
         _FUNCTION(AvrXResetSemaphore)
         
 AvrXResetSemaphore:
         mov     Zh, p1h
         mov     Zl, p1l
-ars00:
         BeginCritical
         ldd     tmp2, Z+NextL
         ldd     tmp3, Z+NextH

@@ -33,13 +33,6 @@
 ;
 ; Non blocking call to check state of the Semaphore.
 ;
-; AvrXTestObjectSemaphore
-; AvrXTestTimer
-; AvrXTestPid
-; AvrXTestMessageAck
-;
-; Non blocking version of AvrXWaitObjectSemaphore
-;
 ; PASSED:       R25:R24 = Semaphore/Object
 ; RETURNS:      R25:R24 = 0 - _PEND
 ;                       = 1 - _DONE
@@ -49,18 +42,6 @@
 ; SIDE EFFECTS:	If semaphore is _DONE, we return _DONE, but reset semaphore to _PEND
 ; NOTES:
 -*/
-        _FUNCTION(AvrXTestTimer)
-        _PUBLIC(AvrXTestPid)
-        _PUBLIC(AvrXTestMessageAck)
-        _PUBLIC(AvrXTestObjectSemaphore)
-AvrXTestTimer:
-AvrXTestPid:
-AvrXTestMessageAck:
-AvrXTestObjectSemaphore:
-        subi    p1l, lo8(-2)
-        sbci    p1h, hi8(-2)
-        _ENDFUNC
-
         _FUNCTION(AvrXTestSemaphore)
 AvrXTestSemaphore:
         mov     Zh, p1h

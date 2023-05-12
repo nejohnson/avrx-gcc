@@ -38,7 +38,8 @@ CSRC =  avrx_kernel.c \
 		avrx_priority.c \
 		avrx_halt.c \
 		avrx_eeprom.c \
-		avrx_runtask.c
+		avrx_runtask.c \
+		avrx_systemobj.c
 
 ASRC  = avrx_canceltimer.S 			\
 		avrx_canceltimermessage.S 	\
@@ -64,6 +65,7 @@ CFLAGS  = -mmcu=$(MCU)
 CFLAGS += -I./$(INCDIR)
 CFLAGS += -O$(OPT)
 CFLAGS += -funsigned-bitfields -fpack-struct -fshort-enums
+CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -Wall -Wstrict-prototypes
 CFLAGS += -std=gnu99
 

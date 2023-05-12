@@ -33,42 +33,6 @@
         _CODESECTION
 
 /*+
-; --------------------------------------------------
-; void AvrXWaitObjectSemaphore(pMutex)
-; void AvrXWaitTimer:
-; void AvrXWaitMessageAck:
-; void AvrXWaitTask:
-;
-; Standard system objects have a semaphore as their
-; second byte.  This call waits on that.
-;
-; PASSED:       p1h:p1l = Object
-; RETURNS:
-; USES:         Z, X;
-; CALLS:
-; ASSUMES:
-; NOTES:        - 6/28/00 Changed code to only do IntProlog/Epilog
-;               if Semaphore is _PEND or > _DONE
-;               - Must stay critical through entire routine so we
-;               do not "append" ourselves to a "DONE" semaphore
-;               - Because of above, can assume the running code is
-;               at the top of the run queue (change code later..)
-;
-;               Trivial case ~20 cycles
--*/
-        _FUNCTION(AvrXWaitObjectSemaphore)
-        _PUBLIC(AvrXWaitTimer)
-        _PUBLIC(AvrXWaitMessageAck)
-        _PUBLIC(AvrXWaitTask)
-
-AvrXWaitTimer:
-AvrXWaitMessageAck:
-AvrXWaitTask:
-AvrXWaitObjectSemaphore:
-        subi    p1l, lo8(-2)
-        sbci    p1h, hi8(-2)
-        _ENDFUNC
-/*+
 ; -----------------------------------------------
 ; void AvrXWaitSemaphore(pMutex)
 ;
@@ -142,15 +106,6 @@ aws01:
 ; STACK:
 ; SIDE EFFECTS:
 -*/
-        _FUNCTION(AvrXSetObjectSemaphore)
-        _PUBLIC(AvrXAckMessage)
-
-AvrXAckMessage:
-AvrXSetObjectSemaphore:
-        subi    p1l, lo8(-2)
-        sbci    p1h, hi8(-2)
-        _ENDFUNC
-
         _FUNCTION(AvrXSetSemaphore)
 AvrXSetSemaphore:
         rcall   AvrXIntSetSemaphore	; r1l == 0 if running task changed.

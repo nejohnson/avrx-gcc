@@ -21,11 +21,15 @@
 
 	http://www.gnu.org/copyleft/lgpl.html
 */
+
+/*****************************************************************************/
 #ifndef AVRXCHEADER
 #define AVRXCHEADER
+/*****************************************************************************/
 
 #include <stdint.h>
 
+/*****************************************************************************/
 
 #  define FLASH  __attribute__ ((progmem))
 #  define EEPROM __attribute__ ((section(".eeprom")))
@@ -35,17 +39,35 @@
     void A(void)
 #  define CTASKFUNC(A) void A(void) CTASK;\
 	void A(void)
-#  define INTERFACE
 
 #  define BeginCritical() asm volatile ("cli\n")
 #  define EndCritical()   asm volatile ("sei\n")
 
-/*
-    void * AvrXSetKernelStack(char *newstack)
+/*****************************************************************************/
+/*****************************************************************************/
+/***                                                                       ***/
+/***                   K E R N E L   /   P R O C E S S E S                 ***/
+/***                                                                       ***/
+/*****************************************************************************/
+/*****************************************************************************/
 
-    Sets AvrX Stack to "newstack" or, if NULL then to the current stack
-*/
-void *AvrXSetKernelStack(void *bval);
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXSetKernelStack
+ *
+ *  SYNOPSIS
+ *      void *AvrXSetKernelStack(void *pNewStack)
+ *
+ *  DESCRIPTION
+ *      Sets AvrX Stack to "pNewStack" or, if NULL then to the current stack
+ *
+ *  RETURNS
+ *      Pointer to kernel stack
+ *
+ *****************************************************************************/
+extern void *AvrXSetKernelStack(void *);
+
 /*
     The process id is a chunk of eram that contains the state
     of a process.
@@ -53,10 +75,13 @@ void *AvrXSetKernelStack(void *bval);
 typedef struct ProcessID
 {
     struct ProcessID  *next;
-    uint8_t flags, priority;
-    void *ContextPointer;
+    uint8_t            flags;
+	uint8_t            priority;
+    void              *ContextPointer;
 }
 * pProcessID, ProcessID;
+
+#define NOPID ((pProcessID)0)
 
 struct AvrXKernelData
 {
@@ -66,13 +91,13 @@ struct AvrXKernelData
     uint8_t           SysLevel;
 };
 
-
-#define NOMESSAGE ((pMessageControlBlock)0)
-#define NOTIMER ((pTimerControlBlock)0)
-#define NOPID ((pProcessID)0)
-#define SEM_PEND ((Mutex)0)
-#define SEM_DONE ((Mutex)1)
-#define SEM_WAIT ((Mutex)2)     // AvrXTestSemaphore(): Something waiting
+/*****************************************************************************/
+/*****************************************************************************/
+/***                                                                       ***/
+/***                         S E M A P H O R E S                           ***/
+/***                                                                       ***/
+/*****************************************************************************/
+/*****************************************************************************/
 
 /*
  Mutex semaphores are a simple linked list of waiting
@@ -80,33 +105,129 @@ struct AvrXKernelData
 
  SEM_PEND         // Semaphore is reset waiting for a signal
  SEM_DONE         // Semaphore has been triggered.
+ SEM_WAIT         // Something is waiting on the semaphore
                   // Any other value is the address of a processID
 */
-typedef pProcessID Mutex, *pMutex;     /* A mutex is basically a pointer to a process */
+#define SEM_PEND ((Mutex)0)
+#define SEM_DONE ((Mutex)1)
+#define SEM_WAIT ((Mutex)2)
+
+typedef pProcessID Mutex, *pMutex;     /* A mutex is a pointer to a process */
 
 #define AVRX_MUTEX(A)\
         Mutex A
 
-INTERFACE void AvrXSetSemaphore(pMutex);
-INTERFACE void AvrXIntSetSemaphore(pMutex);
-INTERFACE void AvrXWaitSemaphore(pMutex);
+extern void AvrXSetSemaphore(pMutex);
+extern void AvrXIntSetSemaphore(pMutex);
+extern void AvrXWaitSemaphore(pMutex);
 
-INTERFACE Mutex AvrXSetObjectSemaphore(pMutex);
-INTERFACE Mutex AvrXTestObjectSemaphore(pMutex);
-
-INTERFACE void AvrXResetObjectSemaphore(pMutex);
-#define AvrXIntResetObjectSemaphore(A) \
-			AvrXResetObjectSemaphore(A)
-
-INTERFACE Mutex AvrXTestSemaphore(pMutex);
+extern Mutex AvrXTestSemaphore(pMutex);
 #define AvrXIntTestSemaphore(A) \
 			AvrXTestSemaphore(A)
 
-INTERFACE void AvrXResetSemaphore(pMutex);
+extern void AvrXResetSemaphore(pMutex);
 #define AvrXIntResetSemaphore(A) \
 			AvrXResetSemaphore(A)
 
 
+/*****************************************************************************/
+/*****************************************************************************/
+/***                                                                       ***/
+/***                    S Y S T E M    O B J E C T S                       ***/
+/***                                                                       ***/
+/*****************************************************************************/
+/*****************************************************************************/
+
+typedef struct SystemObject
+{
+    struct SystemObject *next;
+    Mutex semaphore;	
+}
+* pSystemObject, SystemObject;
+
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXSetObjectSemaphore
+ *
+ *  SYNOPSIS
+ *      void AvrXSetObjectSemaphore(pSystemObject)
+ *
+ *  DESCRIPTION
+ *      Sets the semaphore within a System Object.
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
+extern void AvrXSetObjectSemaphore(pSystemObject);
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXResetObjectSemaphore
+ *
+ *  SYNOPSIS
+ *      void AvrXResetObjectSemaphore(pSystemObject)
+ *
+ *  DESCRIPTION
+ *      Resets the semaphore within a System Object.
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
+extern void AvrXResetObjectSemaphore(pSystemObject);
+#define AvrXIntResetObjectSemaphore(A) \
+			AvrXResetObjectSemaphore(A)
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXTestObjectSemaphore
+ *
+ *  SYNOPSIS
+ *      void AvrXTestObjectSemaphore(pSystemObject)
+ *
+ *  DESCRIPTION
+ *      Gets the state of the semaphore within a System Object.
+ *
+ *  RETURNS
+ *      Semaphore state:
+ *			 SEM_PEND         // Semaphore is reset waiting for a signal
+ *			 SEM_DONE         // Semaphore has been triggered.
+ *			 SEM_WAIT         // Something is waiting on the semaphore
+ *							  // Any other value is the address of a processID
+ *
+ *****************************************************************************/
+extern Mutex AvrXTestObjectSemaphore(pSystemObject);
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXWaitObjectSemaphore
+ *
+ *  SYNOPSIS
+ *      void AvrXWaitObjectSemaphore(pSystemObject)
+ *
+ *  DESCRIPTION
+ *      Waits on the semaphore within a System Object.
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
+extern void AvrXWaitObjectSemaphore(pSystemObject);
+
+
+/*****************************************************************************/
+/*****************************************************************************/
+/***                                                                       ***/
+/***                           M E S S A G E S                             ***/
+/***                                                                       ***/
+/*****************************************************************************/
+/*****************************************************************************/
 
 /*
     Message Queues are really an extension of Semaphore
@@ -117,10 +238,11 @@ INTERFACE void AvrXResetSemaphore(pMutex);
 */
 typedef struct MessageControlBlock
 {
-    struct MessageControlBlock *next;
-    Mutex semaphore;
+    SystemObject SObj;
 }
 * pMessageControlBlock, MessageControlBlock;
+
+#define NOMESSAGE ((pMessageControlBlock)0)
 
 #define AVRX_MESSAGE(A) \
         MessageControlBlock A
@@ -135,13 +257,31 @@ typedef struct MessageQueue
 #define AVRX_MESSAGEQ(A)\
         MessageQueue A
 
-INTERFACE pMessageControlBlock AvrXRecvMessage(pMessageQueue);
-INTERFACE pMessageControlBlock AvrXWaitMessage(pMessageQueue);
-INTERFACE void AvrXSendMessage(pMessageQueue, pMessageControlBlock);
-INTERFACE void AvrXIntSendMessage(pMessageQueue, pMessageControlBlock);
-INTERFACE void AvrXAckMessage(pMessageControlBlock);
-INTERFACE void AvrXWaitMessageAck(pMessageControlBlock);
-INTERFACE Mutex AvrXTestMessageAck(pMessageControlBlock);
+extern pMessageControlBlock AvrXRecvMessage(pMessageQueue);
+
+extern pMessageControlBlock AvrXWaitMessage(pMessageQueue);
+
+extern void AvrXSendMessage(pMessageQueue, pMessageControlBlock);
+
+extern void AvrXIntSendMessage(pMessageQueue, pMessageControlBlock);
+
+#define AvrXAckMessage(A) \
+		AvrXSetObjectSemaphore((pSystemObject)(A))
+		
+#define AvrXWaitMessageAck(A) \
+		AvrXWaitObjectSemaphore((pSystemObject)(A))
+
+#define AvrXTestMessageAck(A) \
+		AvrXTestObjectSemaphore((pSystemObject)(A))
+
+/*****************************************************************************/
+/*****************************************************************************/
+/***                                                                       ***/
+/***                              T I M E R S                              ***/
+/***                                                                       ***/
+/*****************************************************************************/
+/*****************************************************************************/
+
 /*
     The timer queue manager is a service run in kernel mode and is tuned
     to minimize interrupt latency while queueing, tracking and dequeuing
@@ -149,11 +289,28 @@ INTERFACE Mutex AvrXTestMessageAck(pMessageControlBlock);
 */
 typedef struct TimerControlBlock
 {
-    struct TimerControlBlock *next;
-    Mutex semaphore;
+    struct SystemObject SObj;
     uint16_t count;
 }
 * pTimerControlBlock, TimerControlBlock;
+
+#define NOTIMER ((pTimerControlBlock)0)
+
+#define AVRX_TIMER(A) TimerControlBlock A
+
+extern void AvrXStartTimer(pTimerControlBlock, uint16_t);
+extern pTimerControlBlock AvrXCancelTimer(pTimerControlBlock);
+extern void AvrXDelay(pTimerControlBlock, uint16_t);
+
+#define AvrXWaitTimer(A) \
+		AvrXWaitObjectSemaphore((pSystemObject)(A))
+		
+#define AvrXTestTimer(A) \
+		AvrXTestObjectSemaphore((pSystemObject)(A))
+
+extern void AvrXTimerHandler(void);    // Kernel Function to be called by timer ISR
+
+
 /*
     A special version of timers that send messages rather than firing
     a semaphore.
@@ -169,22 +326,20 @@ typedef struct TimerMessageBlock
 }
 * pTimerMessageBlock, TimerMessageBlock;
 
-
-#define AVRX_TIMER(A) TimerControlBlock A
-
-INTERFACE void AvrXStartTimer(pTimerControlBlock, uint16_t);
-INTERFACE pTimerControlBlock AvrXCancelTimer(pTimerControlBlock);
-INTERFACE void AvrXDelay(pTimerControlBlock, uint16_t);
-INTERFACE void AvrXWaitTimer(pTimerControlBlock);
-INTERFACE Mutex AvrXTestTimer(pTimerControlBlock);
-
-INTERFACE void AvrXTimerHandler(void);    // Kernel Function to be called by timer ISR
-
 // Special versions of timer queue elements that get sent
 // to a message queue when expired.
 
-INTERFACE void AvrXStartTimerMessage(pTimerMessageBlock, uint16_t, pMessageQueue);
-INTERFACE pMessageControlBlock AvrXCancelTimerMessage(pTimerMessageBlock, pMessageQueue);
+extern void AvrXStartTimerMessage(pTimerMessageBlock, uint16_t, pMessageQueue);
+extern pMessageControlBlock AvrXCancelTimerMessage(pTimerMessageBlock, pMessageQueue);
+
+
+/*****************************************************************************/
+/*****************************************************************************/
+/***                                                                       ***/
+/***                             T A S K S                                 ***/
+/***                                                                       ***/
+/*****************************************************************************/
+/*****************************************************************************/
 
 /*
    The Task Control Block contains all the information needed
@@ -247,6 +402,25 @@ TCB(start)
   extern TaskControlBlock start##Tcb; \
   extern ProcessID start##Pid
 
+
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXInitTask
+ *
+ *  SYNOPSIS
+ *      void AvrXInitTask(TaskControlBlock *)
+ *
+ *  DESCRIPTION
+ *      Initialises a task.
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
+extern pProcessID AvrXInitTask(TaskControlBlock *);
+
 /*****************************************************************************
  *
  *  FUNCTION
@@ -262,18 +436,19 @@ TCB(start)
  *      none
  *
  *****************************************************************************/
-INTERFACE void AvrXRunTask(TaskControlBlock *);
+extern void AvrXRunTask(TaskControlBlock *);
 
-INTERFACE pProcessID AvrXInitTask(TaskControlBlock *);
 
-INTERFACE void AvrXResume(pProcessID);
-INTERFACE void AvrXSuspend(pProcessID);
-INTERFACE void AvrXBreakPoint(pProcessID);
-INTERFACE uint8_t AvrXSingleStep(pProcessID);
-INTERFACE uint8_t AvrXSingleStepNext(pProcessID);
+extern void AvrXResume(pProcessID);
+extern void AvrXSuspend(pProcessID);
+extern void AvrXBreakPoint(pProcessID);
+extern uint8_t AvrXSingleStep(pProcessID);
+extern uint8_t AvrXSingleStepNext(pProcessID);
 
-INTERFACE void AvrXTerminate(pProcessID);
-INTERFACE void AvrXTaskExit(void);
+extern void AvrXTerminate(pProcessID);
+extern void AvrXTaskExit(void);
+
+
 
 /*****************************************************************************
  *
@@ -290,11 +465,7 @@ INTERFACE void AvrXTaskExit(void);
  *      Never returns, it's the very last thing you ever do....
  *
  *****************************************************************************/
-INTERFACE void AvrXHalt(void);
-
-INTERFACE void AvrXWaitTask(pProcessID);
-INTERFACE Mutex AvrXTestPid(pProcessID);
-
+extern void AvrXHalt(void);
 
 /*****************************************************************************
  *
@@ -311,7 +482,7 @@ INTERFACE Mutex AvrXTestPid(pProcessID);
  *      The process's current priority.
  *
  *****************************************************************************/
-INTERFACE uint8_t AvrXPriority(pProcessID);
+extern uint8_t AvrXPriority(pProcessID);
 
 /*****************************************************************************
  *
@@ -328,7 +499,7 @@ INTERFACE uint8_t AvrXPriority(pProcessID);
  *      The previous priority
  *
  *****************************************************************************/
-INTERFACE uint8_t AvrXChangePriority(pProcessID, uint8_t);
+extern uint8_t AvrXChangePriority(pProcessID, uint8_t);
 
 /*****************************************************************************
  *
@@ -346,21 +517,20 @@ INTERFACE uint8_t AvrXChangePriority(pProcessID, uint8_t);
  *      Assumes the current process is top of the run queue.
  *
  *****************************************************************************/
-INTERFACE pProcessID AvrXSelf(void);
+extern pProcessID AvrXSelf(void);
 
 
-INTERFACE void IntProlog(void);
-INTERFACE void Epilog(void);
+extern void IntProlog(void);
+extern void Epilog(void);
 
 /*****************************************************************************/
 /*****************************************************************************/
+/***                                                                       ***/
+/***                            E E P R O M                                ***/
+/***                                                                       ***/
+/*****************************************************************************/
+/*****************************************************************************/
 
-/*
- * AvrX provides some EEPROM access routines that control access to the hardware
- * via a semaphore.  This semaphore needs to be "set" prior to using the access
- * routines.
- */
- 
 /*****************************************************************************
  *
  *  FUNCTION
@@ -370,13 +540,16 @@ INTERFACE void Epilog(void);
  *      void AvrXEEPromInit(void)
  *
  *  DESCRIPTION
- *      Sets up the AvrX EEPROM system.
+ *      Sets up the AvrX EEPROM driver.
+ *      AvrX provides some EEPROM access routines that control access to the 
+ *      hardware via a semaphore.  This semaphore needs to be "set" prior to 
+ *      using the access routines.
  *
  *  RETURNS
  *      none
  *
  *****************************************************************************/
-INTERFACE void AvrXEEPromInit(void);
+extern void AvrXEEPromInit(void);
 
 /*****************************************************************************
  *
@@ -393,7 +566,7 @@ INTERFACE void AvrXEEPromInit(void);
  *      The read byte
  *
  *****************************************************************************/
-INTERFACE uint8_t AvrXReadEEProm(const uint8_t *);
+extern uint8_t AvrXReadEEProm(const uint8_t *);
 
 /*****************************************************************************
  *
@@ -410,7 +583,7 @@ INTERFACE uint8_t AvrXReadEEProm(const uint8_t *);
  *      The read word
  *
  *****************************************************************************/
-INTERFACE uint16_t AvrXReadEEPromWord(const uint16_t *);
+extern uint16_t AvrXReadEEPromWord(const uint16_t *);
 
 /*****************************************************************************
  *
@@ -427,8 +600,12 @@ INTERFACE uint16_t AvrXReadEEPromWord(const uint16_t *);
  *      none
  *
  *****************************************************************************/
-INTERFACE void AvrXWriteEEProm(uint8_t *, uint8_t);
+extern void AvrXWriteEEProm(uint8_t *, uint8_t);
 
 /*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 #endif /* AVRXCHEADER */
+/*****************************************************************************/
+/*****************************************************************************/
 /*****************************************************************************/
