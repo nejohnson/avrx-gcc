@@ -23,8 +23,7 @@
 */
 #include        "avrx.inc"
 
-        _MODULE(avrx_resetsemaphore)
-        _CODESECTION
+        _MODULE avrx_resetsemaphore.S
 
 /*+
 ; -----------------------------------------------
@@ -44,9 +43,9 @@
 ; Notes:        It does not make sense to reset a semaphore that has
 ;               a process waiting, so just skip that situation.
 -*/
-        _FUNCTION(AvrXResetSemaphore)
+        _FUNCTION AvrXResetSemaphore
         
-AvrXResetSemaphore:
+AvrXResetSemaphore:		
         mov     Zh, p1h
         mov     Zl, p1l
         BeginCritical
@@ -62,6 +61,7 @@ ars01:
         std     Z+NextH, tmp3 
         std     Z+NextL, tmp2
         EndCriticalReturn
-        _ENDFUNC
-        _END
+		
+        _ENDFUNC AvrXResetSemaphore
+
 

@@ -23,8 +23,7 @@
 */
 #include        "avrx.inc"
 
-        _MODULE(avrx_testsemaphore)
-        _CODESECTION
+        _MODULE avrx_testsemaphore
 
 /*+
 ;-----------------------------------------------
@@ -42,7 +41,8 @@
 ; SIDE EFFECTS:	If semaphore is _DONE, we return _DONE, but reset semaphore to _PEND
 ; NOTES:
 -*/
-        _FUNCTION(AvrXTestSemaphore)
+        _FUNCTION AvrXTestSemaphore
+		
 AvrXTestSemaphore:
         mov     Zh, p1h
         mov     Zl, p1l
@@ -71,7 +71,6 @@ aits01:
 		out	_SFR_IO_ADDR(SREG), tmp0
 		ret
 
-        _ENDFUNC
-        _END
+        _ENDFUNC AvrXTestSemaphore
 
 

@@ -23,14 +23,8 @@
 */
 #include        "avrx.inc"
 
-;
-; AvrX Time Queue Manager
-;
-        _MODULE(avrx_starttimermessage)
-        _EXTERN(CountNotZero)
-        _EXTERN(AvrXSendMessage)
+        _MODULE avrx_starttimermessage
         
-        _CODESECTION
 /*+
 ;
 ;------------------------------------------------
@@ -43,7 +37,7 @@
 ; Uses:
 ;-
 -*/
-        _FUNCTION(AvrXStartTimerMessage)
+        _FUNCTION AvrXStartTimerMessage
 
 AvrXStartTimerMessage:
         subi    p2l, lo8(-0)
@@ -65,6 +59,5 @@ axstm0:
         std     Z+TcbSemaphore+NextL, tmp2   ; Cruft up bogus semaphore
         rjmp    CountNotZero            ; This is in avrx_timequeue.s
 
-        _ENDFUNC
-        _END
+        _ENDFUNC AvrXStartTimerMessage
 

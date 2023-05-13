@@ -23,18 +23,8 @@
 */
 #include        "avrx.inc"
 
-        _MODULE(avrx_timequeue)
-        _EXTERN(AvrXIntSendMessage)
-        _EXTERN(AvrXIntSetObjectSemaphore)
-        _EXTERN(AvrXSetObjectSemaphore)
-        _EXTERN(IntProlog)
-        _EXTERN(_Epilog)
-        _EXTERN(AvrXWaitObjectSemaphore)
-;
-; AvrX Time Queue Manager
-;
+        _MODULE avrx_timequeue
 
-        _CODESECTION
 /*+
 ; -----------------------------------------------
 ; void AvrXDelay(pTcb, unsigned)
@@ -46,12 +36,14 @@
 ; Stack:
 ; Notes:        See AvrXStartTimer, AvrXWaitObjectSemaphore
 -*/
-        _FUNCTION(AvrXDelay)
+        _FUNCTION AvrXDelay
 
 AvrXDelay:
         rcall   AvrXStartTimer
         rjmp    AvrXWaitObjectSemaphore
-        _ENDFUNC
+		
+        _ENDFUNC AvrXDelay
+		
 /*+
 ; -----------------------------------------------
 ; void AvrXStartTimer(pTcb, unsigned)
@@ -65,7 +57,7 @@ AvrXDelay:
 ;               Resets TCB Semaphore  If count Zero, just flag
 ;               semaphore and return
 -*/
-        _FUNCTION(AvrXStartTimer)
+        _FUNCTION AvrXStartTimer
 
 AvrXStartTimer:
         subi    p2l, lo8(-0)
@@ -73,7 +65,7 @@ AvrXStartTimer:
         brne    CountNotZero
         rjmp    AvrXSetObjectSemaphore
 		
-        _PUBLIC(CountNotZero)
+        _PUBLIC CountNotZero
 CountNotZero:
         AVRX_Prolog
 
@@ -125,7 +117,8 @@ ast01:
         rcall   TimerHandler   ; process any nested timer interrupts
 
         rjmp    _Epilog
-        _ENDFUNC
+		
+        _ENDFUNC AvrXStartTimer
 
 /*+
 ; -----------------------------------------------
@@ -144,7 +137,7 @@ ast01:
 ; but Z and tmp0-4.  System calls within can and do trash the trashable
 ; registers, hence all the push/pops
 -*/
-        _FUNCTION(AvrXTimerHandler)
+        _FUNCTION AvrXTimerHandler
 
 AvrXTimerHandler:
         BeginCritical
@@ -220,6 +213,6 @@ TimerHandler:
         EndCritical
         brne    ati00
         ret
-        _ENDFUNC
+		
+        _ENDFUNC AvrXTimerHandler
 
-        _END

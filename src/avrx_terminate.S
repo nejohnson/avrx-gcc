@@ -23,15 +23,8 @@
 */
 #include        "avrx.inc"
 
-        _MODULE(avrx_terminate)
+        _MODULE avrx_terminate
 		
-        _EXTERN(IntProlog)
-        _EXTERN(_RemoveObject)
-        _EXTERN(AvrXKernelData)
-        _EXTERN(_Epilog)
-
-        _CODESECTION
-
 /*+
 ; --------------------------------------------------
 ; AvrXTaskExit
@@ -48,16 +41,18 @@
 ; ASSUMES:
 ; NOTES:
 -*/
-        _FUNCTION(AvrXTaskExit)
+        _FUNCTION AvrXTaskExit
 
 AvrXTaskExit:                   ; Entry point for killing self
         AVRX_Prolog             ; Entire state of dying task is on stack
         lds     p1h, AvrXKernelData+Running+NextH
         lds     p1l, AvrXKernelData+Running+NextL
         rjmp    at00
-        _ENDFUNC
+		
+        _ENDFUNC AvrXTaskExit
 
-        _FUNCTION(AvrXTerminate)
+        _FUNCTION AvrXTerminate
+		
 AvrXTerminate:                  ; Entry point for killing other tasks.
         AVRX_Prolog
 at00:
@@ -73,8 +68,5 @@ at00:
         rcall   _RemoveObject           ; Attempt to remove from run queue
         rjmp    _Epilog
 
-        _ENDFUNC
-
-        _END
-
+        _ENDFUNC AvrXTerminate
 

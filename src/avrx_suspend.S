@@ -23,13 +23,7 @@
 */
 #include        "avrx.inc"
 
-        _MODULE(avrx_suspend)
-        _EXTERN(_Epilog)
-        _EXTERN(IntProlog)
-        _EXTERN(AvrXKernelData)
-        _EXTERN(_RemoveObject)
-
-        _CODESECTION
+        _MODULE avrx_suspend
 
 /*+
 ; --------------------------------------------------
@@ -46,7 +40,7 @@
 ;               of this for pids queued elsewhere when they become
 ;               eligable for running.
 -*/
-        _FUNCTION(AvrXSuspend)
+        _FUNCTION AvrXSuspend
 
 AvrXSuspend:                    ; User Entry Point
         AVRX_Prolog
@@ -72,6 +66,6 @@ as00:
         std     Y+PidState, Zl
 as01:
         rjmp    _Epilog
-        _ENDFUNC
-        _END
+		
+        _ENDFUNC AvrXSuspend
 

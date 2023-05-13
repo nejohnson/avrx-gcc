@@ -23,18 +23,8 @@
 */
 #include        "avrx.inc"
 
-        _MODULE(avrx_message)
+		_MODULE avrx_message.S
 
-        _EXTERN(IntProlog)
-        _EXTERN(_Epilog)
-        _EXTERN(_AppendObject)
-        _EXTERN(AvrXIntSetObjectSemaphore)
-        _EXTERN(_RemoveFirstObject)
-        _EXTERN(AvrXWaitObjectSemaphore)
-        _EXTERN(AvrXResetSemaphore)
-        _EXTERN(AvrXResetObjectSemaphore)
-
-        _CODESECTION
 /*+
 ; --------------------------------------------------
 ; void AvrXSendMessage(pMessageQueue, pMessageControlBlock)
@@ -47,13 +37,15 @@
 ; ASSUMES:
 ; NOTES:
 -*/
-        _FUNCTION(AvrXSendMessage)
-
-AvrXSendMessage:
+		_FUNCTION AvrXSendMessage
+		
+AvrXSendMessage:		
         AVRX_Prolog
         rcall   AvrXIntSendMessage
         rjmp    _Epilog
-        _ENDFUNC
+		
+		_ENDFUNC AvrXSendMessage
+		
 /*+
 ; --------------------------------------------------
 ; void AvrXIntSendMessage(pMessageQueue, pMessageControlBlock)
@@ -68,12 +60,10 @@ AvrXSendMessage:
 ;               but you would need to make sure there is
 ;               only one source of messages for that queue
 ;               or wrap _appendObject in a critical section.
-;
-;		9/20/05 - wrapped _AppendObject in critical section
 -*/
-        _FUNCTION(AvrXIntSendMessage)
-
-AvrXIntSendMessage:
+		_FUNCTION AvrXIntSendMessage
+		
+AvrXIntSendMessage:		
         mov     Zh, p1h
         mov     Zl, p1l
         in		tmp2, _SFR_IO_ADDR(SREG)	// Critical section while preserving I
@@ -81,7 +71,8 @@ AvrXIntSendMessage:
         rcall   _AppendObject   ; Append the message onto the queue
 		out		_SFR_IO_ADDR(SREG), tmp2
         rjmp    AvrXIntSetObjectSemaphore
-        _ENDFUNC
+		
+		_ENDFUNC AvrXIntSendMessage
 /*+
 ; --------------------------------------------------
 ; pMessageControlBlock AvrXWaitMessage(pMessageQueue)
@@ -94,9 +85,9 @@ AvrXIntSendMessage:
 ; NOTES:        AvrXRecvMessage is atomic for append-only queues
 ;               just push registers to be saved
 -*/
-        _FUNCTION(AvrXWaitMessage)
+		_FUNCTION AvrXWaitMessage
 
-AvrXWaitMessage:
+AvrXWaitMessage:		
         mov     Zl, p1l
         mov     Zh, p1h
         BeginCritical
@@ -113,6 +104,6 @@ _rm01:
         mov     p1l, p2l
         mov     p1h, p2h
         ret
-        _ENDFUNC
-        _END
+		
+		_ENDFUNC AvrXWaitMessage
 

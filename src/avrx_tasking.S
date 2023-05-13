@@ -24,9 +24,8 @@
 
 #include        "avrx.inc"
 
-        _MODULE(avrx_tasking)
+        _MODULE avrx_tasking
 
-_CODESECTION
 ;+
 ; --------------------------------------------------
 ; void IntProlog(void)
@@ -50,7 +49,7 @@ _CODESECTION
 ;		in user mode.  Do not put any code into the IDLE task - it will break!
 ;
 ;-
-		_FUNCTION(IntProlog)
+		_FUNCTION IntProlog
 
 IntProlog:                      ; 3 cycles
 		push	R29
@@ -154,7 +153,8 @@ AlreadyInKernel:                ; (85/102)
         mov     Zl, tmp1        ; scratch in IARICC
         mov     Zh, tmp2
 		ijmp			; Return to caller (89/106)
-        _ENDFUNC
+		
+        _ENDFUNC IntProlog
 
 /*+
 ; --------------------------------------------------
@@ -170,13 +170,13 @@ AlreadyInKernel:                ; (85/102)
 ; USES:         SysLevel
 ; CALLS:
 -*/
-        _FUNCTION(Epilog)
+        _FUNCTION Epilog
+		
 Epilog:
         pop     R30
         pop     R30
-        _ENDFUNC
 		
-		_FUNCTION(_Epilog)
+		_PUBLIC _Epilog
 _Epilog:
 		ldi		Zl, lo8(AvrXKernelData)
 		ldi		Zh, hi8(AvrXKernelData)
@@ -243,7 +243,8 @@ _IdleTask:
         sei   					; Enable interrupts
         sleep                   ; Power Down..
         rjmp    _IdleTask
-        _ENDFUNC
+		
+        _ENDFUNC Epilog
 
 /*+
 ;-------------------------------------------------
@@ -253,7 +254,7 @@ _IdleTask:
 ; RETURN: pointer to end of stack
 ;
 -*/
-        _FUNCTION(AvrXSetKernelStack)
+        _FUNCTION AvrXSetKernelStack
 
 AvrXSetKernelStack:
         pop     R31
@@ -268,7 +269,7 @@ sks1:
         sts     AvrXKernelData+AvrXStack+NextH, p1h
         ijmp
 
-        _ENDFUNC
+        _ENDFUNC AvrXInitTask
 /*+
 ; --------------------------------------------------
 ; *PID AvrXInitTask(*TaskControlBlock)
@@ -285,7 +286,7 @@ sks1:
 ;               2 STACK
 ;               2 Entry
 -*/
-        _FUNCTION(AvrXInitTask)
+        _FUNCTION AvrXInitTask
 
 AvrXInitTask:
         mov     Zl, p1l
@@ -297,7 +298,6 @@ AvrXInitTask:
         mov     Xh, R0
 
 #ifdef  TASKEXIT
-        _EXTERN(AvrXTaskExit)
         ldi     tmp2, lo8_pm(AvrXTaskExit)
         st      X, tmp2          ; !Pre-dec is not a PUSH!
         ldi     tmp2, hi8_pm(AvrXTaskExit)
@@ -346,7 +346,8 @@ lpm_inc:                        ; Tiny helper...
         lpm
         adiw    Zl, 1
         ret
-        _ENDFUNC
+		
+        _ENDFUNC AvrXInitTask
 /*+
 ; --------------------------------------------------
 ; void AvrXResume(pProcessID)
@@ -366,7 +367,7 @@ lpm_inc:                        ; Tiny helper...
 ; ASSUMES:
 ; NOTES:
 -*/
-        _FUNCTION(AvrXResume)
+        _FUNCTION AvrXResume
 
 AvrXResume:                     ; User Entry Point
         AVRX_Prolog
@@ -387,7 +388,8 @@ AvrXResume:                     ; User Entry Point
         rcall   _QueuePid       ; If found, then add to run queue
 ar00:
         rjmp    _Epilog
-        _ENDFUNC
+		
+        _ENDFUNC AvrXResume
 /*+
 ; --------------------------------------------------
 ; _QueuePid
@@ -405,7 +407,7 @@ ar00:
 ; NOTES:        Returns with interrupts on.
 ;		; 9/13/04 Preserves INTERRUPTS
 -*/
-        _FUNCTION(_QueuePid)
+        _FUNCTION _QueuePid
 
 _QueuePid:                              ; Kernel entry point only
         mov     Zl, p1l
@@ -454,6 +456,5 @@ _qpSUSPEND:
         std     Z+PidState, tmp0
 		ret			; 9/13/04
 
-        _ENDFUNC
-        _END
+        _ENDFUNC _QueuePid
 

@@ -23,15 +23,7 @@
 */
 #include        "avrx.inc"
 
-        _MODULE(avrx_reschedule)
-
-        _EXTERN(IntProlog)
-        _EXTERN(_Epilog)
-        _EXTERN(AvrXKernelData)
-        _EXTERN(_QueuePid)
-        _EXTERN(_RemoveObject)
-
-        _CODESECTION
+        _MODULE avrx_reschedule.S
 
 ;+-------------------------------------------------------------------
 ;
@@ -43,7 +35,7 @@
 ; handler).  Reschedules the top of the run queue, which, as noted below, may
 ; not actually be the current running task.
 ;
-        _FUNCTION(AvrXIntReschedule)
+        _FUNCTION AvrXIntReschedule
 
 AvrXIntReschedule:
 		lds		Zl, AvrXKernelData+RunQueue+NextL	; Grab the top of the run queue
@@ -58,7 +50,7 @@ air1:
 		sts		RunQueue+NextH, p1h
 		rjmp	_QueuePid
 
-		_ENDFUNC
+		_ENDFUNC AvrXIntReschedule
 
 ;+------------------------------------------------------------------
 ;
@@ -77,7 +69,7 @@ air1:
 ; which protects grabbing the running pointer for passing onto QueuePid.
 ;-
 
-		_FUNCTION(AvrXYield)
+		_FUNCTION AvrXYield
 
 AvrXYield:
 		AVRX_Prolog
@@ -93,5 +85,4 @@ AvrXYield:
 		rcall	_QueuePid		; requeue ourselves
 		rjmp	_Epilog			; jump to the new top of the queue
 
-		_ENDFUNC
-		_END
+		_ENDFUNC AvrXYield

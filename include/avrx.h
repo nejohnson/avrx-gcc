@@ -150,18 +150,22 @@ typedef struct SystemObject
  *
  *  FUNCTION
  *      AvrXSetObjectSemaphore
+ *		AvrXIntSetObjectSemaphore
  *
  *  SYNOPSIS
  *      void AvrXSetObjectSemaphore(pSystemObject)
+ *      void AvrXIntSetObjectSemaphore(pSystemObject) 
  *
  *  DESCRIPTION
  *      Sets the semaphore within a System Object.
+ *  	The Int version is safe to be called from within an interrupt handler.
  *
  *  RETURNS
  *      none
  *
  *****************************************************************************/
 extern void AvrXSetObjectSemaphore(pSystemObject);
+extern void AvrXIntSetObjectSemaphore(pSystemObject);
 
 /*****************************************************************************
  *

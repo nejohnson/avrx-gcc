@@ -23,17 +23,8 @@
 */
 #include        "avrx.inc"
 
-;
-; AvrX Time Queue Manager
-;
-        _MODULE(avrx_canceltimer)
-        _EXTERN(_TimerQueue)
-        _EXTERN(_RemoveObject)
-        _EXTERN(_Epilog)
-        _EXTERN(IntProlog)
-        _EXTERN(AvrXIntSetObjectSemaphore)
+		_MODULE avrx_canceltimer.S
 
-        _CODESECTION
 /*+
 ; -----------------------------------------------
 ; pTimerControlBlock
@@ -47,8 +38,8 @@
 ;       end of list, then add count to Next tcb.
 ;
 -*/
-        _FUNCTION(AvrXCancelTimer)
-        
+		_FUNCTION AvrXCancelTimer
+		
 AvrXCancelTimer:
         AVRX_Prolog
         rcall   AvrXIntSetObjectSemaphore
@@ -80,6 +71,5 @@ act00:
         std     Y+_p1h, tmp1
         rjmp    _Epilog
         
-        _ENDFUNC
-        _END
+		_ENDFUNC AvrXCancelTimer
 

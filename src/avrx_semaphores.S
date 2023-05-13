@@ -1,5 +1,5 @@
 /*
-	avrx_sempahore.S
+	avrx_sempahores.S
 
 	Copyright (C)1998 - 2002 Larry Barello (larry@barello.net)
 	Copyright (C)2023        Neil Johnson (neil@njohnson.co.uk)
@@ -23,14 +23,7 @@
 */
 #include        "avrx.inc"
 
-        _MODULE(avrx_semaphores)
-
-        _EXTERN(IntProlog)
-        _EXTERN(AvrXKernelData)
-        _EXTERN(_QueuePid)
-        _EXTERN(_Epilog)
-
-        _CODESECTION
+        _MODULE avrx_semaphores.S
 
 /*+
 ; -----------------------------------------------
@@ -48,7 +41,7 @@
 ; Notes:        Only called from user mode, may block.
 -*/
 
-        _FUNCTION(AvrXWaitSemaphore)
+        _FUNCTION AvrXWaitSemaphore
 
 AvrXWaitSemaphore:
         mov     Zl, p1l
@@ -80,7 +73,9 @@ aws01:
         rcall   _AppendObject   ; Append ourselves to the Semaphore
 
         rjmp    _Epilog
-        _ENDFUNC
+		
+        _ENDFUNC AvrXWaitSemaphore
+
 /*+
 ; -----------------------------------------------
 ; void AvrXSetSemaphore(pMutex)
@@ -106,8 +101,9 @@ aws01:
 ; STACK:
 ; SIDE EFFECTS:
 -*/
-        _FUNCTION(AvrXSetSemaphore)
-AvrXSetSemaphore:
+        _FUNCTION AvrXSetSemaphore
+		
+AvrXSetSemaphore:		
         rcall   AvrXIntSetSemaphore	; r1l == 0 if running task changed.
         lds	r1h, AvrXKernelData + SysLevel
         inc	r1h			; r1h == 0 if in task context
@@ -120,11 +116,10 @@ axss0:
         EndCritical             ; Allow (any) pending interrupt to be serviced.
         rjmp    _Epilog
 
-        _ENDFUNC
+        _ENDFUNC AvrXSetSemaphore
 /*+
 ; -----------------------------------------------
 ; (void) AvrXIntSetSemaphore(pMutex)
-; (void) AvrXIntSetObjectSemaphore(pMutex)
 ;
 ; Entry point for interrupt handlers (or code already switched into
 ; the system stack)
@@ -138,13 +133,7 @@ axss0:
 ; NOTES:        Does not accumulate sets.  If semaphore already set, the
 ;               just ignore it (not a counting semaphore)
 -*/
-        _FUNCTION(AvrXIntSetObjectSemaphore)
-AvrXIntSetObjectSemaphore:      ; This one here because so small
-        subi    p1l, lo8(-2)
-        sbci    p1h, hi8(-2)
-        _ENDFUNC
-
-        _FUNCTION(AvrXIntSetSemaphore)
+        _FUNCTION AvrXIntSetSemaphore 
 
 AvrXIntSetSemaphore:            ; Entry point for interrupt exit routines.
         mov     Zl, p1l
@@ -182,7 +171,7 @@ aiss00:
         mov     p1h, p2h
         rjmp   _QueuePid       ; p1h:p1l = Pid, r1l = queued status
 
-        _ENDFUNC
+        _ENDFUNC AvrXIntSetSemaphore
 
 /*+-----------------------------------------------------------
         READ FUNCTION HEADERS AND CODE BEFORE USING!!!
@@ -216,11 +205,14 @@ aiss00:
 ; ASSUMES:      Null terminated list;
 ; NOTES:
 -*/
+        _FUNCTION _AppendObject
+		
+_AppendObject:
+		rjmp	_ao01
 _ao00:
         mov     Zl, tmp0
         mov     Zh, tmp1
-        _FUNCTION(_AppendObject)
-_AppendObject:
+_ao01:
         ldd     tmp0, Z+NextL
         ldd     tmp1, Z+NextH
         subi    tmp0, lo8(0)
@@ -234,7 +226,8 @@ _AppendObject:
         std     Z+NextH, tmp1   ; Object->Next = 0
         std     Z+NextL, tmp0
         ret
-        _ENDFUNC
+		
+        _ENDFUNC _AppendObject
 /*+
 ; --------------------------------------------------
 ; _RemoveObject
@@ -254,11 +247,14 @@ _AppendObject:
 ; ASSUMES:      Called within a critical section
 ; NOTES:        Z are side effects used else where in AvrX
 -*/
+        _FUNCTION _RemoveObject
+
+_RemoveObject:
+		rjmp 	_ro01
 _ro00:
         mov     Zh, tmp1
         mov     Zl, tmp0
-        _FUNCTION(_RemoveObject)
-_RemoveObject:
+_ro01:
         ldd     tmp0, Z+NextL
         ldd     tmp1, Z+NextH
         cp      p2l, tmp0
@@ -268,7 +264,8 @@ _RemoveObject:
         sbci    tmp1, hi8(0)    ; Test end of list
         brne    _ro00           ; Walk the list
         ret                     ; End of list
-        _ENDFUNC
+		
+        _ENDFUNC _RemoveObject
 
 /*+
 ; --------------------------------------------------
@@ -288,7 +285,8 @@ _RemoveObject:
 ; NOTES:        Interrupts NOT disabled.  Must disable if possibility
 ;               of something being insterted at head of queue
 -*/
-        _FUNCTION(_RemoveFirstObject)
+        _FUNCTION _RemoveFirstObject
+		
 _RemoveFirstObject:
         ldd     p2l, Z+NextL
         ldd     p2h, Z+NextH     ; X = pointer to object
@@ -296,7 +294,8 @@ _RemoveFirstObject:
         sbci    p2h, hi8(0)      ; Test end of list
         brne    _RemoveObjectAt
         ret
-        _ENDFUNC
+		
+        _ENDFUNC _RemoveFirstObject
 
 /*+
 ; --------------------------------------------------
@@ -317,7 +316,7 @@ _RemoveFirstObject:
 ; NOTES:        Interrupts NOT disabled.  Must disable if possibility
 ;               of something being insterted at head of queue
 -*/
-        _FUNCTION(_RemoveObjectAt)
+        _FUNCTION _RemoveObjectAt
 
 _RemoveObjectAt:                ; Z = Prev, p2 = Object
         mov     tmp2, Yl
@@ -342,6 +341,5 @@ _RemoveObjectAt:                ; Z = Prev, p2 = Object
         clz                     ; Return non-zero
         ret
 
-        _ENDFUNC
-        _END
+        _ENDFUNC _RemoveObjectAt
 

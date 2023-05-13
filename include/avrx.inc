@@ -1,5 +1,5 @@
 /*
-	avrx.inc
+	avrx.inc  - Assembler source header (defines, macros, etc)
 
 	Copyright (C)1998 - 2002 Larry Barello (larry@barello.net)
 	Copyright (C)2023        Neil Johnson (neil@njohnson.co.uk)
@@ -21,49 +21,64 @@
 
 	http://www.gnu.org/copyleft/lgpl.html
 
-20020907 - Added _IOMACRO_H_ definition to prevent older GCC io.h files
-	   from including C only header information
-
-	 - Added #defines for _SFR_IO_ADDR() macro to make it a NOP for
-	   pre GCC 3.2 compilers and for IAR (I wonder what they do for
-	   extended I/O access?)
-
-	   THIS works because avrx.inc loads "io.h" which loads "sfr-defs.h"
-	   which defines _SFR_IO_ADDR() macro on the 3.2 compiler.
 */
 
 #ifndef __AVRXINC
 #define __AVRXINC
-#include "avrx-ctoasm.inc"
 
-
-// Define _IOMACROS_H_ to prevent GCC 3.02 io.h from including this
-// C only file when using io.h for assembly code.  io.h called within
-// avrx-io.h
-#define _IOMACROS_H_
 #include <avr/io.h> 
 
-#  if !defined(_SFR_IO_ADDR)      /* GCC 3.2 compatibility */
-#    define _SFR_IO_ADDR(A) (A)   /* earlier compilers do not use this */
-#  endif
-#  define _GLOBAL(Label, Size) .comm Label, Size
-#  define _STATIC(Label, Size) .lcomm Label, Size
-#  define _DATASECTION
-#  define _CODESECTION
+
+
+/* C to ASM */
+
+/* Incoming Function Parameters */
+#  define p1l     R24
+#  define p1h     R25
+#  define p2l     R22
+#  define p2h     R23
+#  define p3l     R20
+#  define p3h     R21
+#  define r1l     R24
+#  define r1h     R25
+
+#  define tmp0    R18
+#  define tmp1    R19
+#  define tmp2    R20
+#  define tmp3    R21
+#  define tmp4    R26   /* X */
+#  define tmp5    R27   /* X */
+
+
+/*
 #  define _FUNCTION(A) \
         .global A $ \
         .func   A
 #  define _ENDFUNC .endfunc
 #  define _PUBLIC(A) .global A
-#  define _EXTERN(A)
 #  define _MODULE(A) .section .text.avrx.A
-#  define _ENDMOD
-#  define _END
-#  define _DB .asciz
-#  define MACRO .macro
-#  define ENDM .endm
-#  define _EQU(A,B) .equ A, B
-#  define _ALIGN .balign 2
+*/
+
+.macro _MODULE filename
+		.file "\filename"
+		.text
+.endm
+
+.macro _PUBLIC name
+		.global \name
+.endm
+
+.macro _FUNCTION fname
+		.section .text.avrx.\fname,"ax",@progbits
+		.global \fname
+		.type \fname, @function
+.endm
+
+.macro _ENDFUNC fname
+		.size \fname, .-\fname
+.endm
+
+
 
 
 #ifndef BV
@@ -167,8 +182,6 @@ SEMAPHORE BIT DEFINITIONS
 
 #define MtxSz           2
 
-#define MUTEX(A) _GLOBAL(A, 2)
-
 /*+ --------------------------------------------------
 
  Events
@@ -192,10 +205,6 @@ SEMAPHORE BIT DEFINITIONS
 #define TcbSz           6       /* Primitive Timer */
 #define TmbSz           8       /* Timer Message */
 
-#define TIMER(A) _GLOBAL(A, TcbSz)
-
-#define TIMERMESSAGE(A) _GLOBAL(A, TmbSz)
-
 /* Message Queue */
 
 #define MsqSz           4       /* Head of message queue */
@@ -209,45 +218,22 @@ SEMAPHORE BIT DEFINITIONS
 #define QcbSemaphore    2       /* Return Receipt Semaphore */
 #define QcbData         4       /* pointer to data/or data */
 
-#define MESSAGEQ(A) _GLOBAL(A, MsqSz)
-
-/* Fifos */
-
-#define FifoSz 4        /* Size of AvrX Fifo Data Struct */
-
-#define WriteSemaphore 0
-#define ReadSemaphore 2
-#define fBuffer 4
-
-/* User Section */
-
-#define f_buffersz 4    /* Size of buffer header */
-
-#define f_Size 0
-#define f_Count 1
-#define f_In 2
-#define f_Out 3
-#define f_Data 4        /* Variable length */
-
-#define FIFO(A, B, Size) \
-        _GLOBAL(A, FifoSz) \
-        _GLOBAL(B, (Size+f_Buffersz))
-
-#ifndef AVRXCHEADER
 /*+ -------------------------------------------------- 
  Handy Macros
 */
-        MACRO  EndInterrupt
+
+
+.macro EndInterrupt
         reti
-        ENDM
+.endm
 
-        MACRO BeginCritical
+.macro BeginCritical
         cli
-        ENDM
+.endm
 
-        MACRO  EndCritical
+.macro EndCritical
         sei
-        ENDM
+.endm
 
 #define EndCriticalReturn EndInterrupt
 
@@ -255,11 +241,13 @@ SEMAPHORE BIT DEFINITIONS
  Use this macro rather than a call to _Prolog, see
  version notes in AvrX.asm
 */
-        MACRO  AVRX_Prolog
+
+.macro AVRX_Prolog
         BeginCritical
         rcall   IntProlog
         EndCritical
-        ENDM
+.endm
+
 /*
  These register definitions are just handy aliases for the
  various index and word math registers
@@ -273,5 +261,4 @@ SEMAPHORE BIT DEFINITIONS
 #define		Zl 		R30
 #define		Zh 		R31
 
-#endif /*AVRXCHEADER */
 #endif  /* __AVRXINC */

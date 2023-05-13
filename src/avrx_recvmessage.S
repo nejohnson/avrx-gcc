@@ -23,12 +23,8 @@
 */
 #include        "avrx.inc"
 
-        _MODULE(avrx_recvmessage)
+		_MODULE avrx_recvmessage.S
 
-        _EXTERN(_RemoveFirstObject)
-        _EXTERN(AvrXResetSemaphore)
-
-        _CODESECTION
 /*+
 ; --------------------------------------------------
 ; pMessage AvrXRecvMessage(pMessageQueue)
@@ -44,8 +40,8 @@
 ;               
 ;
 -*/
-        _FUNCTION(AvrXRecvMessage)
-        
+		_FUNCTION AvrXRecvMessage
+
 AvrXRecvMessage:
         mov     Zl, p1l
         mov     Zh, p1h
@@ -58,6 +54,5 @@ AvrXRecvMessage:
         mov     r1h, p2h
         EndCriticalReturn
 
-        _ENDFUNC
-        _END
+		_ENDFUNC AvrXRecvMessage
 

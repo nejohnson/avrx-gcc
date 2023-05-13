@@ -23,17 +23,8 @@
 */
 #include        "avrx.inc"
 
-;
-; AvrX Time Queue Manager
-;
-        _MODULE(avrx_canceltimermessage)
+		_MODULE avrx_canceltimermessage.S
 
-        _EXTERN(_TimerQueue)
-        _EXTERN(_Epilog)
-        _EXTERN(IntProlog)
-        _EXTERN(_RemoveObject)
-
-        _CODESECTION
 /*+
 ; -----------------------------------------------
 ; pTimerControlBlock
@@ -49,9 +40,9 @@
 ;       to remove from message queue.
 ;
 -*/
-        _FUNCTION(AvrXCancelTimerMessage)
-        
-AvrXCancelTimerMessage:
+		_FUNCTION AvrXCancelTimerMessage
+
+AvrXCancelTimerMessage:		
         AVRX_Prolog
         mov     p2l, p1l
         mov     p2h, p1h
@@ -88,5 +79,5 @@ actm00:
         std     Y+_r1h, Xh
 actm01:
         rjmp    _Epilog
-        _ENDFUNC
-        _END
+		
+		_ENDFUNC AvrXCancelTimerMessage

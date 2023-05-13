@@ -37,6 +37,12 @@ void AvrXSetObjectSemaphore(pSystemObject pSObj)
 }
 
 /*****************************************************************************/
+void AvrXIntSetObjectSemaphore(pSystemObject pSObj)
+{
+	AvrXIntSetSemaphore(&pSObj->semaphore);
+}
+
+/*****************************************************************************/
 Mutex AvrXTestObjectSemaphore(pSystemObject pSObj)
 {
 	return AvrXTestSemaphore(&pSObj->semaphore);
