@@ -59,7 +59,7 @@ AvrXWaitSemaphore:
         std     Z+NextH, tmp1
         EndCriticalReturn       ; and return
 aws01:
-        rcall   IntProlog       ; Do task switch (ints disabled)
+        rcall   AvrXEnterKernel       ; Do task switch (ints disabled)
 
         ; With new code, we *can* assume we are at the top of the run queue
 
@@ -106,9 +106,9 @@ AvrXSetSemaphore:
         breq    axss0           	; Reschedule if task context & queue changed (0).
         ret
 axss0:
-        BeginCritical           ; Do task switch with interrupts off
-        rcall   IntProlog
-        EndCritical             ; Allow (any) pending interrupt to be serviced.
+		; Do task switch with interrupts off
+		; Allow (any) pending interrupt to be serviced.
+		AVRX_Prolog
         rjmp    _Epilog
 
         _ENDFUNC AvrXSetSemaphore

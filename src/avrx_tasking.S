@@ -28,7 +28,7 @@
 
 ;+
 ; --------------------------------------------------
-; void IntProlog(void)
+; void AvrXEnterKernel(void)
 ;
 ; Pushes entire register context onto the stack, returning a frame pointer
 ; to the saved context.  If running in user mode upon entry (SysLevel == 0xFF)
@@ -49,9 +49,9 @@
 ;		in user mode.  Do not put any code into the IDLE task - it will break!
 ;
 ;-
-		_FUNCTION IntProlog
+		_FUNCTION AvrXEnterKernel
 
-IntProlog:                      ; 3 cycles
+AvrXEnterKernel:                      ; 3 cycles
 		push	R29
 		push	R28
 		push	R27
@@ -154,10 +154,11 @@ AlreadyInKernel:                ; (85/102)
         mov     Zh, tmp2
 		ijmp			; Return to caller (89/106)
 		
-        _ENDFUNC IntProlog
+        _ENDFUNC AvrXEnterKernel
 
 /*+
 ; --------------------------------------------------
+; void AvrXLeaveKernel(void)
 ; _Epilog
 ;
 ; Restore previous context (kernel or user).
@@ -170,9 +171,9 @@ AlreadyInKernel:                ; (85/102)
 ; USES:         SysLevel
 ; CALLS:
 -*/
-        _FUNCTION Epilog
+        _FUNCTION AvrXLeaveKernel
 		
-Epilog:
+AvrXLeaveKernel:
         pop     R30
         pop     R30
 		
@@ -244,7 +245,7 @@ _IdleTask:
         sleep                   ; Power Down..
         rjmp    _IdleTask
 		
-        _ENDFUNC Epilog
+        _ENDFUNC AvrXLeaveKernel
 
 /*+
 ;-------------------------------------------------

@@ -244,7 +244,7 @@ SEMAPHORE BIT DEFINITIONS
 
 .macro AVRX_Prolog
         BeginCritical
-        rcall   IntProlog
+        rcall   AvrXEnterKernel
         EndCritical
 .endm
 

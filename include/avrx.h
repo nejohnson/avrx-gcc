@@ -1,25 +1,25 @@
 /*
-	avrx.h - AvrX Public Interface Definitions
+    avrx.h - AvrX Public Interface Definitions
 
-	Copyright (c)1998 - 2002 Larry Barello (larry@barello.net)
-	Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
+    Copyright (c)1998 - 2002 Larry Barello (larry@barello.net)
+    Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
 
-	This library is free software; you can redistribute it and/or
-	modify it under the terms of the GNU Library General Public
-	License as published by the Free Software Foundation; either
-	version 2 of the License, or (at your option) any later version.
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
 
-	This library is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-	Library General Public License for more details.
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
 
-	You should have received a copy of the GNU Library General Public
-	License along with this library; if not, write to the
-	Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-	Boston, MA  02111-1307, USA.
+    You should have received a copy of the GNU Library General Public
+    License along with this library; if not, write to the
+    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA  02111-1307, USA.
 
-	http://www.gnu.org/copyleft/lgpl.html
+    http://www.gnu.org/copyleft/lgpl.html
 */
 
 /*****************************************************************************/
@@ -36,7 +36,7 @@
 
 #  define CTASK  __attribute__ ((noreturn))
 #  define CTASKFUNC(A) void A(void) CTASK;\
-	void A(void)
+    void A(void)
 
 #  define BeginCritical() asm volatile ("cli\n")
 #  define EndCritical()   asm volatile ("sei\n")
@@ -74,7 +74,7 @@ typedef struct ProcessID
 {
     struct ProcessID  *next;
     uint8_t            flags;
-	uint8_t            priority;
+    uint8_t            priority;
     void              *ContextPointer;
 }
 * pProcessID, ProcessID;
@@ -121,11 +121,11 @@ extern void AvrXWaitSemaphore(pMutex);
 
 extern Mutex AvrXTestSemaphore(pMutex);
 #define AvrXIntTestSemaphore(A) \
-			AvrXTestSemaphore(A)
+            AvrXTestSemaphore(A)
 
 extern void AvrXResetSemaphore(pMutex);
 #define AvrXIntResetSemaphore(A) \
-			AvrXResetSemaphore(A)
+            AvrXResetSemaphore(A)
 
 
 /*****************************************************************************/
@@ -139,7 +139,7 @@ extern void AvrXResetSemaphore(pMutex);
 typedef struct SystemObject
 {
     struct SystemObject *next;
-    Mutex semaphore;	
+    Mutex semaphore;    
 }
 * pSystemObject, SystemObject;
 
@@ -148,7 +148,7 @@ typedef struct SystemObject
  *
  *  FUNCTION
  *      AvrXSetObjectSemaphore
- *		AvrXIntSetObjectSemaphore
+ *      AvrXIntSetObjectSemaphore
  *
  *  SYNOPSIS
  *      void AvrXSetObjectSemaphore(pSystemObject)
@@ -156,7 +156,7 @@ typedef struct SystemObject
  *
  *  DESCRIPTION
  *      Sets the semaphore within a System Object.
- *  	The Int version is safe to be called from within an interrupt handler.
+ *      The Int version is safe to be called from within an interrupt handler.
  *
  *  RETURNS
  *      none
@@ -182,7 +182,7 @@ extern void AvrXIntSetObjectSemaphore(pSystemObject);
  *****************************************************************************/
 extern void AvrXResetObjectSemaphore(pSystemObject);
 #define AvrXIntResetObjectSemaphore(A) \
-			AvrXResetObjectSemaphore(A)
+            AvrXResetObjectSemaphore(A)
 
 /*****************************************************************************
  *
@@ -197,10 +197,10 @@ extern void AvrXResetObjectSemaphore(pSystemObject);
  *
  *  RETURNS
  *      Semaphore state:
- *			 SEM_PEND         // Semaphore is reset waiting for a signal
- *			 SEM_DONE         // Semaphore has been triggered.
- *			 SEM_WAIT         // Something is waiting on the semaphore
- *							  // Any other value is the address of a processID
+ *           SEM_PEND         // Semaphore is reset waiting for a signal
+ *           SEM_DONE         // Semaphore has been triggered.
+ *           SEM_WAIT         // Something is waiting on the semaphore
+ *                            // Any other value is the address of a processID
  *
  *****************************************************************************/
 extern Mutex AvrXTestObjectSemaphore(pSystemObject);
@@ -268,13 +268,13 @@ extern void AvrXSendMessage(pMessageQueue, pMessageControlBlock);
 extern void AvrXIntSendMessage(pMessageQueue, pMessageControlBlock);
 
 #define AvrXAckMessage(A) \
-		AvrXSetObjectSemaphore((pSystemObject)(A))
-		
+        AvrXSetObjectSemaphore((pSystemObject)(A))
+        
 #define AvrXWaitMessageAck(A) \
-		AvrXWaitObjectSemaphore((pSystemObject)(A))
+        AvrXWaitObjectSemaphore((pSystemObject)(A))
 
 #define AvrXTestMessageAck(A) \
-		AvrXTestObjectSemaphore((pSystemObject)(A))
+        AvrXTestObjectSemaphore((pSystemObject)(A))
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -305,10 +305,10 @@ extern pTimerControlBlock AvrXCancelTimer(pTimerControlBlock);
 extern void AvrXDelay(pTimerControlBlock, uint16_t);
 
 #define AvrXWaitTimer(A) \
-		AvrXWaitObjectSemaphore((pSystemObject)(A))
-		
+        AvrXWaitObjectSemaphore((pSystemObject)(A))
+        
 #define AvrXTestTimer(A) \
-		AvrXTestObjectSemaphore((pSystemObject)(A))
+        AvrXTestObjectSemaphore((pSystemObject)(A))
 
 extern void AvrXTimerHandler(void);    // Kernel Function to be called by timer ISR
 
@@ -350,10 +350,10 @@ extern pMessageControlBlock AvrXCancelTimerMessage(pTimerMessageBlock, pMessageQ
 */
 typedef struct
 {
-    void *r_stack;          		// Start of stack (top address-1)
-    void (*start) (void);   		// Entry point of code
-    pProcessID pid;         		// Pointer to Process ID block
-    uint8_t priority;       	// Priority of task (0-255)
+    void *r_stack;                  // Start of stack (top address-1)
+    void (*start) (void);           // Entry point of code
+    pProcessID pid;                 // Pointer to Process ID block
+    uint8_t priority;           // Priority of task (0-255)
 }
 PROGMEM const TaskControlBlock;
 /*
@@ -361,23 +361,23 @@ PROGMEM const TaskControlBlock;
     and access to the resulting data structures.
 
 AVRX_TASK(start, stacksz, priority)
-	Declare task data structures and forward reference to task
+    Declare task data structures and forward reference to task
 AVRX_TASKDEF(start, stacksz, priority)
-	Declare task data structure and the top level C
-	declaration (AVRX_TASK + C function declaration)
+    Declare task data structure and the top level C
+    declaration (AVRX_TASK + C function declaration)
 AVRX_SIGINT(vector)
-	Declare the top level C declaration for an
-	interrupt handler
+    Declare the top level C declaration for an
+    interrupt handler
 AVRX_EXTERNTASK(start)
-	Declare external task data structures
+    Declare external task data structures
 PID(start)
-	Return the pointer to the task PID
+    Return the pointer to the task PID
 TCB(start)
-	Return the pointer to the task TCB
+    Return the pointer to the task TCB
 */
 
 #define MINCONTEXT 35           // 32 registers, return address and SREG
-#define AVRX_TASK(start, c_stack, priority)	\
+#define AVRX_TASK(start, c_stack, priority) \
     uint8_t start ## Stk [c_stack + MINCONTEXT] ; \
     CTASKFUNC(start); \
     ProcessID start ## Pid; \
@@ -399,8 +399,8 @@ TCB(start)
 #define PID(start) &start##Pid
 #define TCB(start) (&start##Tcb)
 
-#define AVRX_EXTERNTASK(start)	\
-  CTASKFUNC(start);				\
+#define AVRX_EXTERNTASK(start)  \
+  CTASKFUNC(start);             \
   extern TaskControlBlock start##Tcb; \
   extern ProcessID start##Pid
 
@@ -443,9 +443,6 @@ extern void AvrXRunTask(TaskControlBlock *);
 
 extern void AvrXResume(pProcessID);
 extern void AvrXSuspend(pProcessID);
-extern void AvrXBreakPoint(pProcessID);
-extern uint8_t AvrXSingleStep(pProcessID);
-extern uint8_t AvrXSingleStepNext(pProcessID);
 
 extern void AvrXTerminate(pProcessID);
 extern void AvrXTaskExit(void);
@@ -521,9 +518,35 @@ extern uint8_t AvrXChangePriority(pProcessID, uint8_t);
  *****************************************************************************/
 extern pProcessID AvrXSelf(void);
 
-
-extern void IntProlog(void);
-extern void Epilog(void);
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXEnterKernel
+ *      AvrXLeaveKernel
+ *
+ *  SYNOPSIS
+ *      void AvrXEnterKernel(void)
+ *      void AvrXLeaveKernel(void)
+ *
+ *  DESCRIPTION
+ *      Switch to and from kernel context.  Must be first and last actions 
+ *      inside interrupt handler.  E.g.,
+ *
+ *      AVRX_SIGINT(TIMEY_WIMEY_vect)
+ *      {
+ *          AvrXEnterKernel();
+ *              .
+ *              .
+ *              .
+ *          AvrXLeaveKernel();
+ *      }
+ *
+ *  RETURNS
+ *      None
+ *
+ *****************************************************************************/
+extern void AvrXEnterKernel(void);
+extern void AvrXLeaveKernel(void);
 
 /*****************************************************************************/
 /*****************************************************************************/
