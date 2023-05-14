@@ -28,9 +28,10 @@
 /*+
 ;-----------------------------------------------
 ; AvrXTestSemaphore
-; AvrXTIntTestSemaphore
 ;
 ; Non blocking call to check state of the Semaphore.
+; May be called from interrupt context (see pseudonym
+; AvrXIntTestSemaphore).
 ;
 ; PASSED:       R25:R24 = Semaphore/Object
 ; RETURNS:      R25:R24 = 0 - _PEND

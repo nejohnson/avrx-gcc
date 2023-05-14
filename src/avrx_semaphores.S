@@ -207,12 +207,10 @@ aiss00:
 -*/
         _FUNCTION _AppendObject
 		
-_AppendObject:
-		rjmp	_ao01
 _ao00:
         mov     Zl, tmp0
         mov     Zh, tmp1
-_ao01:
+_AppendObject:
         ldd     tmp0, Z+NextL
         ldd     tmp1, Z+NextH
         subi    tmp0, lo8(0)
@@ -249,12 +247,10 @@ _ao01:
 -*/
         _FUNCTION _RemoveObject
 
-_RemoveObject:
-		rjmp 	_ro01
 _ro00:
         mov     Zh, tmp1
         mov     Zl, tmp0
-_ro01:
+_RemoveObject:
         ldd     tmp0, Z+NextL
         ldd     tmp1, Z+NextH
         cp      p2l, tmp0
