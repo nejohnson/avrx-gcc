@@ -23,8 +23,6 @@
 
 */
 
-#include <avr/eeprom.h>
-
 #include "avrx.h"
 
 static Mutex EEPromMutex;

@@ -29,14 +29,12 @@
 
 #include <stdint.h>
 
+#include <avr/pgmspace.h>
+#include <avr/eeprom.h>
+
 /*****************************************************************************/
 
-#  define FLASH  __attribute__ ((progmem))
-#  define EEPROM __attribute__ ((section(".eeprom")))
-#  define NAKED  __attribute__ ((naked))
 #  define CTASK  __attribute__ ((noreturn))
-#  define NAKEDFUNC(A) void A(void) NAKED;\
-    void A(void)
 #  define CTASKFUNC(A) void A(void) CTASK;\
 	void A(void)
 
@@ -357,7 +355,7 @@ typedef struct
     pProcessID pid;         		// Pointer to Process ID block
     uint8_t priority;       	// Priority of task (0-255)
 }
-FLASH const TaskControlBlock;
+PROGMEM const TaskControlBlock;
 /*
     A series of macros to ease the declaration of tasks
     and access to the resulting data structures.

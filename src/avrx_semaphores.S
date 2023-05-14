@@ -79,20 +79,15 @@ aws01:
 /*+
 ; -----------------------------------------------
 ; void AvrXSetSemaphore(pMutex)
-; void AvrXSetObjectSemaphore(pMythicalObject)
-; void AvrXAckMessage(pMessageControlBlock)
 ;
 ; Sets (signals) an regular or object semaphore
-; As of 9/13/05 can be called by AvrX interrupt handler as well as
+; Can be called by AvrX interrupt handler as well as
 ; a task.  It just will not reschedule if in kernel mode, or no task
 ; switch occured.
 ;
 ; Signals a semaphore.  If semaphore is _PEND or _DONE, just mark
 ; DONE and return.  If a task is waiting, run it and set the semaphore
 ; to the _PEND state.
-;
-; Second Entry point is for Interrupt routines that want to Signal
-; a semaphore.  Assumes context already saved.
 ;
 ; PASSED:       R25:R24 = Semaphore
 ; RETURNS:
@@ -130,7 +125,7 @@ axss0:
 ; USES:         everything,
 ; STACK:        2
 ; SIDE EFFECTS: Assumes p1l == r1l
-; NOTES:        Does not accumulate sets.  If semaphore already set, the
+; NOTES:        Does not accumulate sets.  If semaphore already set, then
 ;               just ignore it (not a counting semaphore)
 -*/
         _FUNCTION AvrXIntSetSemaphore 
