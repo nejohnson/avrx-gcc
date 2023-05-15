@@ -40,7 +40,8 @@ CSRC =  avrx_kernel.c \
 		avrx_eeprom.c \
 		avrx_runtask.c \
 		avrx_systemobj.c \
-		avrx_resetsemaphore.c
+		avrx_resetsemaphore.c \
+		avrx_testsemaphore.c
 		
 ASRC  = avrx_canceltimer.S 			\
 		avrx_canceltimermessage.S 	\
@@ -52,7 +53,6 @@ ASRC  = avrx_canceltimer.S 			\
 		avrx_suspend.S 				\
 		avrx_tasking.S 				\
 		avrx_terminate.S 			\
-		avrx_testsemaphore.S 		\
 		avrx_timequeue.S 	
 
 OBJS = $(addprefix $(BUILDDIR)/,$(CSRC:.c=.o) $(ASRC:.S=.o))
