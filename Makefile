@@ -39,14 +39,14 @@ CSRC =  avrx_kernel.c \
 		avrx_halt.c \
 		avrx_eeprom.c \
 		avrx_runtask.c \
-		avrx_systemobj.c
-
+		avrx_systemobj.c \
+		avrx_resetsemaphore.c
+		
 ASRC  = avrx_canceltimer.S 			\
 		avrx_canceltimermessage.S 	\
 		avrx_message.S 				\
 		avrx_recvmessage.S 			\
 		avrx_reschedule.S 			\
-		avrx_resetsemaphore.S 		\
 		avrx_semaphores.S 			\
 		avrx_starttimermessage.S 	\
 		avrx_suspend.S 				\

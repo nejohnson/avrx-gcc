@@ -106,9 +106,9 @@ struct AvrXKernelData
  SEM_WAIT         // Something is waiting on the semaphore
                   // Any other value is the address of a processID
 */
-#define SEM_PEND ((Mutex)0)
-#define SEM_DONE ((Mutex)1)
-#define SEM_WAIT ((Mutex)2)
+#define AVRX_SEM_PEND ((Mutex)0)
+#define AVRX_SEM_DONE ((Mutex)1)
+#define AVRX_SEM_WAIT ((Mutex)2)
 
 typedef pProcessID Mutex, *pMutex;     /* A mutex is a pointer to a process */
 
@@ -123,10 +123,22 @@ extern Mutex AvrXTestSemaphore(pMutex);
 #define AvrXIntTestSemaphore(A) \
             AvrXTestSemaphore(A)
 
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXResetSemaphore
+ *
+ *  SYNOPSIS
+ *      void AvrXResetSemaphore(pSystemObject)
+ *
+ *  DESCRIPTION
+ *      Resets the semaphore.
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
 extern void AvrXResetSemaphore(pMutex);
-#define AvrXIntResetSemaphore(A) \
-            AvrXResetSemaphore(A)
-
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -181,8 +193,6 @@ extern void AvrXIntSetObjectSemaphore(pSystemObject);
  *
  *****************************************************************************/
 extern void AvrXResetObjectSemaphore(pSystemObject);
-#define AvrXIntResetObjectSemaphore(A) \
-            AvrXResetObjectSemaphore(A)
 
 /*****************************************************************************
  *
@@ -221,7 +231,6 @@ extern Mutex AvrXTestObjectSemaphore(pSystemObject);
  *
  *****************************************************************************/
 extern void AvrXWaitObjectSemaphore(pSystemObject);
-
 
 /*****************************************************************************/
 /*****************************************************************************/
