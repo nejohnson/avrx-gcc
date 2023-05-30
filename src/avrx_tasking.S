@@ -270,85 +270,8 @@ sks1:
         sts     AvrXKernelData+AvrXStack+NextH, p1h
         ijmp
 
-        _ENDFUNC AvrXInitTask
-/*+
-; --------------------------------------------------
-; *PID AvrXInitTask(*TaskControlBlock)
-;
-; Initialize the PID based upon the TCB table. 
-;
-; PASSED:       R25:R24 = TCB
-; RETURNS:      R25:R24 = PID
-; USES:         X, Z and R0
-; CALLS:
-; NOTES:        TCB, Layout, below:
-;               2 PID
-;               1 Flags
-;               2 STACK
-;               2 Entry
--*/
-        _FUNCTION AvrXInitTask
+        _ENDFUNC AvrXSetKernelStack
 
-AvrXInitTask:
-        mov     Zl, p1l
-        mov     Zh, p1h
-
-        rcall   lpm_inc         ; Get Stack pointer
-        mov     Xl, R0
-        rcall   lpm_inc
-        mov     Xh, R0
-
-#ifdef  TASKEXIT
-        ldi     tmp2, lo8_pm(AvrXTaskExit)
-        st      X, tmp2          ; !Pre-dec is not a PUSH!
-        ldi     tmp2, hi8_pm(AvrXTaskExit)
-        st      -X, tmp2          ; Push task exit onto stack
-
-        rcall   lpm_inc
-        st      -X, R0
-        rcall   lpm_inc
-        st      -X, R0          ; Push task entry point
-#else
-        rcall   lpm_inc
-        st      X, R0
-        rcall   lpm_inc
-        st      -X, R0          ; Push task entry point
-#endif /* TASKEXIT */
-
-        ldi     tmp2, 0
-        ldi     tmp2, 0
-        ldi     tmp3, 33        ; R0-R31 and SREG get "pushed"
-PushRegisters:
-        st      -X, tmp2
-        dec     tmp3            ; Fill rest of context with Zeros
-        brne    PushRegisters   ; Decrement stack pointer
-
-        sbiw    Xl, 1           ; because pre dec is not a push!
-
-        rcall   lpm_inc
-        mov     r1l, R0          ; Get PID -> R23:22
-        rcall   lpm_inc
-        mov     r1h, R0
-        rcall   lpm_inc         ; Priority -> R0
-        mov     Zl, r1l
-        mov     Zh, r1h
-
-        std     Z+PidSP+NextL, Xl
-        std     Z+PidSP+NextH, Xh     ; Stash context frame pointer
-
-        std     Z+PidPriority, R0
-        ldi     Xl, BV(SuspendedBit) | BV(SuspendBit)
-        std     Z+PidState, Xl  ; Mark state so we can "resume" pid
-        std     Z+PidNext+NextH, tmp2
-        std     Z+PidNext+NextL, tmp2; Clear pid.next
-        ret
-
-lpm_inc:                        ; Tiny helper...
-        lpm
-        adiw    Zl, 1
-        ret
-		
-        _ENDFUNC AvrXInitTask
 /*+
 ; --------------------------------------------------
 ; void AvrXResume(pProcessID)

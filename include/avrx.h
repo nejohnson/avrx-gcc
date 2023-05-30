@@ -74,6 +74,10 @@ typedef struct ProcessID
 {
     struct ProcessID  *next;
     uint8_t            flags;
+#define AVRX_PID_Idle         (_BV(4))       /* Dead Task, don't schedule, resume or step */
+#define AVRX_PID_Suspend      (_BV(5))       /* Mark task for suspension (may be blocked elsewhere) */
+#define AVRX_PID_Suspended    (_BV(6))       /* Mark task suspended (it was removed from the run queue) */
+
     uint8_t            priority;
     void              *ContextPointer;
 }
@@ -413,8 +417,6 @@ TCB(start)
   extern TaskControlBlock start##Tcb; \
   extern ProcessID start##Pid
 
-
-
 /*****************************************************************************
  *
  *  FUNCTION
@@ -453,10 +455,40 @@ extern void AvrXRunTask(TaskControlBlock *);
 extern void AvrXResume(pProcessID);
 extern void AvrXSuspend(pProcessID);
 
-extern void AvrXTerminate(pProcessID);
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXTerminate
+ *
+ *  SYNOPSIS
+ *      void AvrXTerminate(pProcessID)
+ *
+ *  DESCRIPTION
+ *      Force any task to terminate.
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
+ extern void AvrXTerminate(pProcessID);
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXTaskExit
+ *
+ *  SYNOPSIS
+ *      void AvrXTaskExit(void)
+ *
+ *  DESCRIPTION
+ *      Called by a task to terminate itself.  From this point on the task can
+ *      no longer be scheduled and remains in a zombie state.
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
 extern void AvrXTaskExit(void);
-
-
 
 /*****************************************************************************
  *

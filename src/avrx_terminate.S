@@ -27,11 +27,10 @@
 		
 /*+
 ; --------------------------------------------------
-; AvrXTaskExit
 ; AvrXTerminate
 ;
-; This is where tasks that "return" come to.  Set the IDLE bit so
-; it can not be queued again.  Then attempt to Dequeue from run queue.
+; Set the IDLE bit so it can not be queued again.  Then attempt to 
+; Dequeue from run queue.
 ; Can not do anything more than that if it is queued on a semaphore...
 ;
 ; PASSED:       R25:R24 = Pid to terminate
@@ -41,21 +40,11 @@
 ; ASSUMES:
 ; NOTES:
 -*/
-        _FUNCTION AvrXTaskExit
-
-AvrXTaskExit:                   ; Entry point for killing self
-        AVRX_Prolog             ; Entire state of dying task is on stack
-        lds     p1h, AvrXKernelData+Running+NextH
-        lds     p1l, AvrXKernelData+Running+NextL
-        rjmp    at00
-		
-        _ENDFUNC AvrXTaskExit
 
         _FUNCTION AvrXTerminate
 		
 AvrXTerminate:                  ; Entry point for killing other tasks.
         AVRX_Prolog
-at00:
         mov     Zh, p1h
         mov     Zl, p1l
         ldi     Xl, BV(IdleBit) ; Mark task dead

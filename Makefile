@@ -41,7 +41,8 @@ CSRC =  avrx_kernel.c \
 		avrx_runtask.c \
 		avrx_systemobj.c \
 		avrx_resetsemaphore.c \
-		avrx_testsemaphore.c
+		avrx_testsemaphore.c \
+		avrx_taskinit.c
 		
 ASRC  = avrx_canceltimer.S 			\
 		avrx_canceltimermessage.S 	\
