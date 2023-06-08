@@ -30,7 +30,6 @@
 #include <stdint.h>
 
 #include <avr/pgmspace.h>
-#include <avr/eeprom.h>
 
 /*****************************************************************************/
 
@@ -588,85 +587,6 @@ extern pProcessID AvrXSelf(void);
  *****************************************************************************/
 extern void AvrXEnterKernel(void);
 extern void AvrXLeaveKernel(void);
-
-/*****************************************************************************/
-/*****************************************************************************/
-/***                                                                       ***/
-/***                            E E P R O M                                ***/
-/***                                                                       ***/
-/*****************************************************************************/
-/*****************************************************************************/
-
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXEEPromInit
- *
- *  SYNOPSIS
- *      void AvrXEEPromInit(void)
- *
- *  DESCRIPTION
- *      Sets up the AvrX EEPROM driver.
- *      AvrX provides some EEPROM access routines that control access to the 
- *      hardware via a semaphore.  This semaphore needs to be "set" prior to 
- *      using the access routines.
- *
- *  RETURNS
- *      none
- *
- *****************************************************************************/
-extern void AvrXEEPromInit(void);
-
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXReadEEProm
- *
- *  SYNOPSIS
- *      uint8_t AvrXReadEEProm(const uint8_t *p)
- *
- *  DESCRIPTION
- *      Reads a single byte from EEPROM address 'p'
- *
- *  RETURNS
- *      The read byte
- *
- *****************************************************************************/
-extern uint8_t AvrXReadEEProm(const uint8_t *);
-
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXReadEEPromWord
- *
- *  SYNOPSIS
- *      uint16_t AvrXReadEEPromWord(const uint16_t *p)
- *
- *  DESCRIPTION
- *      Reads a single word from EEPROM address 'p'
- *
- *  RETURNS
- *      The read word
- *
- *****************************************************************************/
-extern uint16_t AvrXReadEEPromWord(const uint16_t *);
-
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXWriteEEProm
- *
- *  SYNOPSIS
- *      void AvrXWriteEEProm(uint8_t *p, uint8_t b)
- *
- *  DESCRIPTION
- *      Writes a single byte 'b' to EEPROM address 'p'
- *
- *  RETURNS
- *      none
- *
- *****************************************************************************/
-extern void AvrXWriteEEProm(uint8_t *, uint8_t);
 
 /*****************************************************************************/
 /*****************************************************************************/
