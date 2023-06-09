@@ -453,6 +453,8 @@ extern void AvrXRunTask(TaskControlBlock *);
 
 extern void AvrXResume(pProcessID);
 extern void AvrXSuspend(pProcessID);
+extern void AvrXYield(void);
+extern void AvrXIntReschedule(void);
 
 /*****************************************************************************
  *
