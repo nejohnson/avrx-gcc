@@ -15,6 +15,7 @@
 # make (all)     Build AvrX library
 # make install   Install AvrX library in INSTALLDIR
 # make clean     Clean up the mess
+# make what      Show help
 #
 ##############################################################################
 
@@ -102,7 +103,19 @@ $(BUILDDIR):
 $(INSTALLDIR):
 	mkdir -p $(INSTALLDIR)
 
-.PHONY : all clean install Makefile
+##############################################################################
+
+what:
+	@echo "Make avrx-gcc. Targets:"
+	@echo "--------------------------"
+	@echo "   (all)     Build AvrX library (default)"
+	@echo "   install   Install AvrX library in INSTALLDIR"
+	@echo "   clean     Clean up the mess"
+	@echo "   what      Show this help"
+
+##############################################################################
+
+.PHONY : all clean install Makefile what
 
 ##############################################################################
 ##############################################################################
