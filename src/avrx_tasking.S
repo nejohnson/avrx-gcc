@@ -150,7 +150,7 @@ SaveContext:
 
 AlreadyInKernel:                ; (85/102)
 		clr     R1              ; R1 = __Zero__ for Avr-gcc
-        mov     Zl, tmp1        ; scratch in IARICC
+        mov     Zl, tmp1        ; 
         mov     Zh, tmp2
 		ijmp			; Return to caller (89/106)
 		
