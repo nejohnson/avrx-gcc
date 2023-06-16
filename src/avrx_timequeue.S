@@ -113,6 +113,10 @@ ast01:
         std     Y+NextL, Zl
         std     Y+TcbCount+NextL, p2l
         std     Y+TcbCount+NextH, p2h ; NewTCB.Count = count
+		ldi     p1l, lo8(_PEND)		; reset semaphore to PEND
+		ldi     p1h, hi8(_PEND)
+		std     Y+TcbSemaphore+NextL, p1l
+		std     Y+TcbSemaphore+NextH, p1h
 
         rcall   TimerHandler   ; process any nested timer interrupts
 
