@@ -14,7 +14,7 @@ SIMULAVR = simulavr.exe
 SIMULAVROPTS = -d atmega8 -W 0x20,- -R 0x22,- -T exit -F 8000000
 TRACEOPTS = -t trace.txt
 
-TESTS = BasicTest1 BasicTest2 BasicTest3
+TESTS = BasicTest1 BasicTest2 BasicTest3 BasicTest4
 
 TESTEXE = $(addsuffix .elf, $(TESTS))
 
@@ -41,6 +41,10 @@ run3: BasicTest3.elf
 	@echo "Running simulation..."
 	$(SIMULAVR) $(SIMULAVROPTS) -f $<
 
+run4: BasicTest4.elf
+	@echo "Running simulation..."
+	$(SIMULAVR) $(SIMULAVROPTS) -f $<
+	
 ##############################################################################
 ## Cleaning up the mess
 ##############################################################################
