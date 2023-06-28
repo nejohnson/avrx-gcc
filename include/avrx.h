@@ -336,7 +336,7 @@ extern void AvrXStartTimer(pTimerControlBlock, uint16_t);
  *      AvrXCancelTimer
  *
  *  SYNOPSIS
- *      void pTimerControlBlock AvrXCancelTimer(pTimerControlBlock pTCB)
+ *      pTimerControlBlock AvrXCancelTimer(pTimerControlBlock pTCB)
  *
  *  DESCRIPTION
  *      Cancels timer pTCB immediately.  Any waiting task is scehduled to run.
@@ -346,7 +346,7 @@ extern void AvrXStartTimer(pTimerControlBlock, uint16_t);
  *
  *****************************************************************************/
  
-extern void pTimerControlBlock AvrXCancelTimer(pTimerControlBlock);
+extern pTimerControlBlock AvrXCancelTimer(pTimerControlBlock);
 
 /*****************************************************************************
  *
