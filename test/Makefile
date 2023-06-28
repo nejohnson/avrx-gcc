@@ -10,7 +10,7 @@ LIBS = ../avrx-gcc.a
 
 CFLAGS = -g -mmcu=atmega8 -I../include
 
-SIMULAVR = simulavr.exe
+SIMULAVR = simulavr
 SIMULAVROPTS = -d atmega8 -W 0x20,- -R 0x22,- -T exit -F 8000000
 TRACEOPTS = -t trace.txt
 
