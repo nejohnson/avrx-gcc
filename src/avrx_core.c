@@ -38,6 +38,49 @@ uint8_t _TimQLevel;
                             AvrXEnterKernel();  \
                             EndCritical();
 
+
+/****
+Notes:
+0.   Z = R31:R30
+     Y = R29:R28
+     X = R27:R26
+
+1. Once we're in kernel-space we can access the user-space args but for that 
+we need a struct definition of a task's stack.  Something like this, bearing
+in mind the stack pointer is pre-decrement on push, so it grows DOWN.
+
+      /_______________/
+      |               | STACKTOP
+      |               |
+      |---------------|
+      |    RetLo      | [SP+35]
+      |    RetHi      | [SP+34]
+      |    R31        | [SP+33]
+      |    R30        | [SP+32]
+      |    ....       |
+      |    R2         | [SP+4]
+      |    R1         | [SP+3]
+      |    R0         | [SP+2]
+      |    SREG       | [SP+1]
+      |---------------|
+      |               |  <-- SP
+      /               /
+
+
+struct TaskStackFrame {
+	
+
+
+}
+
+
+2. Move to have each function in its own source file where is makes sense.  This
+gives a clean separation of functionality and makes changes easier to track
+between parts of the API.
+
+
+****/
+
 /*****************************************************************************/
 
 int8_t _avrxQueuePid(pProcessID pPid)
