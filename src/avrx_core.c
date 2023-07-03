@@ -1,7 +1,6 @@
 /*
-    avrx_kernel.c - Kernel-Private Data
+    avrx_core.c - Kernel Core experiments
 
-    Copyright (c)1998 - 2002 Larry Barello (larry@barello.net)
     Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
 
     This library is free software; you can redistribute it and/or
@@ -24,20 +23,6 @@
 
 #include "avrx.h"
 #include "avrxcore.h"
-
-/*****************************************************************************/
-struct AvrXKernelData AvrXKernelData;
-
-/*****************************************************************************/
-pTimerControlBlock _TimerQueue;
-
-/*****************************************************************************/
-uint8_t _TimQLevel;
-
-#define AVRX_Prolog()       BeginCritical();    \
-                            AvrXEnterKernel();  \
-                            EndCritical();
-
 
 /****
 Notes:
@@ -68,10 +53,26 @@ in mind the stack pointer is pre-decrement on push, so it grows DOWN.
 
 
 struct TaskStackFrame {
-	
+	uint8_t  ToS;
+	uint8_t  Sreg;
+// Add some descriptive names to register pairs
+#define Z_REG	R.w[15]
+#define Y_REG   R.w[14]
+#define X_REG   R.w[13]
+// GCC ABI puts args in reg pairs starting at 25:24, then 23:22, then 21:20
+#define P1      R.w[12]
+#define P2      R.w[11]
+#define P3      R.w[10]
+// and return value in 25:24
+#define RETVAL  R.w[12]
+	union {
+		uint8_t  b[32]; // 8-bit access
+		uint16_t w[16]; // 16-bit access
+	} R;
+	uint16_t RetAddr;
+};
 
 
-}
 
 
 2. Move to have each function in its own source file where is makes sense.  This
@@ -160,7 +161,7 @@ pProcessID _avrxRemoveObject(pProcessID pQueue, pProcessID pObject)
 void AvrXDelay(pTimerControlBlock pTCB, uint16_t count)
 {
 	AvrXStartTimer(pTCB, count);
-	AvrXWaitObjectSemaphore(&pTCB->SObj);
+	AvrXWaitTimer(pTCB);
 }
 
 /*****************************************************************************/
@@ -175,7 +176,9 @@ void AvrXStartTimer(pTimerControlBlock pTCB, uint16_t count)
 		AvrXSetObjectSemaphore(&pTCB->SObj);
 	else
     {
-        AVRX_Prolog();
+	BeginCritical();
+        AvrXEnterKernel();
+        EndCritical();
 
         pTimerControlBlock *Y, *Z = &_TimerQueue;
 
@@ -299,7 +302,10 @@ pMessage AvrXRecvMessage(pMessageQueue pMQ)
 
 void AvrXTerminate(pProcessID pPID)
 {
-	AVRX_Prolog();	
+	BeginCritical();
+        AvrXEnterKernel();
+        EndCritical();
+
 	pPID->flags = AVRX_PID_Idle;
 	BeginCritical();
 	_RemoveObject(AvrXKernelData.RunQueue, pPID);
@@ -310,7 +316,9 @@ void AvrXTerminate(pProcessID pPID)
 
 void AvrXResume(pProcessID pPID)
 {
-	AVRX_Prolog();
+	BeginCritical();
+        AvrXEnterKernel();
+        EndCritical();
 
 	/* Clear the suspend flag */
 	pPID->flags &= ~AVRX_PID_Suspend;
@@ -330,7 +338,10 @@ void AvrXResume(pProcessID pPID)
 
 void AvrXSendMessage(pMessageQueue pMQ, pMessageControlBlock pMCB)
 {
-	AVRX_Prolog();
+	BeginCritical();
+        AvrXEnterKernel();
+        EndCritical();
+
 	AvrXIntSendMessage(pMQ, pMCB);
 	_Epilog();
 }
@@ -363,7 +374,9 @@ void AvrXStartTimerMessage(pTimerMessageBlock pTMB,
 
 void AvrXSuspend(pProcessID pPID)
 {
-	AVR_Prolog();
+	BeginCritical();
+        AvrXEnterKernel();
+        EndCritical();
 
 	Z = pPID;
 	Z->flags |= AVRX_PID_Suspend;
@@ -383,7 +396,9 @@ void AvrXSuspend(pProcessID pPID)
 
 void AvrXTerminate(pProcessID pPID)
 {
-	AVRX_Prolog();
+	BeginCritical();
+        AvrXEnterKernel();
+        EndCritical();
 
 	pPID->flags |= AVRX_PID_Idle;
 
@@ -398,7 +413,10 @@ void AvrXTerminate(pProcessID pPID)
 
 void AvrXYield(void)
 {
-	AVRX_Prolog();
+	BeginCritical();
+        AvrXEnterKernel();
+        EndCritical();
+
 	BeginCritical();
 	pProcessID pSelf = AvrXKernelData.RunQueue->next;
 	_RemoveObject(AvrXKernelData.RunQueue, pSelf);
@@ -520,6 +538,64 @@ void AvrXWaitSemaphore(pMutex pSem)
 
 	_Epilog();
 }
+
+
+
+pTimerControlBlock AvrXCancelTimer(pTimerControlBlock pTCB)
+{
+	BeginCritical();
+        FP *fp = AvrXEnterKernel();
+        EndCritical();
+
+	AvrXIntSetObjectSemaphore(pTCB);
+
+	pTimerControlBlock pObj = (pTimerControlBlock *)(&fp->R[24]);
+
+	BeginCritical;
+
+	if (pNext = _avrxRemoveObject( _TimerQueue, pObj ) )
+	{
+		pNext->TcbCount += pObj->TcbCount;
+
+		*(pTimerControlBlock *)(&fp->R[24]) = pObj;
+	}
+	else
+	{
+		*(pTimerControlBlock *)(&fp->R[24]) = NULL;
+	}
+	_Epilog();
+}
+
+
+pMessageControlBlock AvrXCancelTimerMessage(pTimerMessageBlock pTMB, pMessageQueue pMQ)
+{
+	BeginCritical();
+        FP *fp = AvrXEnterKernel();
+        EndCritical();
+
+	BeginCritical();
+	pNext = _RemoveObject(_TimerQueue, pTMB);
+	if (pNext)
+	{
+		Y = pTMB;
+		p2 = Y->TcbCount;
+		r1 = Z->TcbCount;
+		r1 += p2;
+		Z->TcbCount = r1;
+	}
+	else
+	{
+		Z = *(pMessageQueue *)(&fp->R[22]);
+		pNext = _RemoveObject(Z, pTMB);
+		if (!pNext)
+			*(pTimerControlBlock *)(&fp->R[24]) = NULL;
+	}
+
+	_Epilog();
+}
+
+
+
 
 #endif
 
