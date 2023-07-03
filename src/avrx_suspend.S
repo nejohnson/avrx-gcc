@@ -43,7 +43,10 @@
         _FUNCTION AvrXSuspend
 
 AvrXSuspend:                    ; User Entry Point
-        AVRX_Prolog
+        BeginCritical
+        rcall   AvrXEnterKernel
+        EndCritical
+
         mov     Zh, p1h
         mov     Zl, p1l
         ldd     tmp0, Z+PidState

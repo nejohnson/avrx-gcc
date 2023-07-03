@@ -67,7 +67,10 @@ AvrXStartTimer:
 		
         _PUBLIC CountNotZero
 CountNotZero:
-        AVRX_Prolog
+        BeginCritical
+        rcall   AvrXEnterKernel
+        EndCritical
+
 
         ldi     Zl, lo8(_TimerQueue)
         ldi     Zh, hi8(_TimerQueue)

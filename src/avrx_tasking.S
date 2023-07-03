@@ -294,7 +294,10 @@ sks1:
         _FUNCTION AvrXResume
 
 AvrXResume:                     ; User Entry Point
-        AVRX_Prolog
+        BeginCritical
+        rcall   AvrXEnterKernel
+        EndCritical
+
 
         mov     Zl, p1l
         mov     Zh, p1h

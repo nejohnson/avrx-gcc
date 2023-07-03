@@ -41,7 +41,10 @@
 		_FUNCTION AvrXCancelTimer
 		
 AvrXCancelTimer:
-        AVRX_Prolog
+        BeginCritical
+        rcall   AvrXEnterKernel
+        EndCritical
+
         rcall   AvrXIntSetObjectSemaphore
 
         ldd     p2l, Y+_p1l

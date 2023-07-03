@@ -44,7 +44,10 @@
         _FUNCTION AvrXTerminate
 		
 AvrXTerminate:                  ; Entry point for killing other tasks.
-        AVRX_Prolog
+        BeginCritical
+        rcall   AvrXEnterKernel
+        EndCritical
+
         mov     Zh, p1h
         mov     Zl, p1l
         ldi     Xl, BV(IdleBit) ; Mark task dead

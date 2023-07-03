@@ -40,7 +40,10 @@
 		_FUNCTION AvrXSendMessage
 		
 AvrXSendMessage:		
-        AVRX_Prolog
+        BeginCritical
+        rcall   AvrXEnterKernel
+        EndCritical
+
         rcall   AvrXIntSendMessage
         rjmp    _Epilog
 		

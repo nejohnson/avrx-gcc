@@ -108,7 +108,10 @@ AvrXSetSemaphore:
 axss0:
 		; Do task switch with interrupts off
 		; Allow (any) pending interrupt to be serviced.
-		AVRX_Prolog
+        BeginCritical
+        rcall   AvrXEnterKernel
+        EndCritical
+
         rjmp    _Epilog
 
         _ENDFUNC AvrXSetSemaphore

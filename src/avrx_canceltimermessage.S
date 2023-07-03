@@ -43,7 +43,10 @@
 		_FUNCTION AvrXCancelTimerMessage
 
 AvrXCancelTimerMessage:		
-        AVRX_Prolog
+        BeginCritical
+        rcall   AvrXEnterKernel
+        EndCritical
+
         mov     p2l, p1l
         mov     p2h, p1h
         ldi     Zl, lo8(_TimerQueue)

@@ -72,7 +72,10 @@ air1:
 		_FUNCTION AvrXYield
 
 AvrXYield:
-		AVRX_Prolog
+        BeginCritical
+        rcall   AvrXEnterKernel
+        EndCritical
+
 		ldi		Zl, lo8(AvrXKernelData+RunQueue)
 		ldi		Zh, hi8(AvrXKernelData+RunQueue)
 		BeginCritical
