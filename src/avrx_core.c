@@ -275,17 +275,6 @@ void _avrxTimerHandler(void)
 
 
 
-
-void _avrxIdleTask (void)
-{
-	while(1)
-	{
-		sei();
-		sleep(); /* not trivial - which mode? etc */
-	}
-}
-
-
 pMessage AvrXRecvMessage(pMessageQueue pMQ)
 {
 	pMessageQueue Z = pMQ;
