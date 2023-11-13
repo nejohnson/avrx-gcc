@@ -32,7 +32,8 @@ Notes:
 
 1. Once we're in kernel-space we can access the user-space args but for that 
 we need a struct definition of a task's stack.  Something like this, bearing
-in mind the stack pointer is pre-decrement on push, so it grows DOWN.
+in mind the stack pointer is post-decrement on push (pre-inc on pop), so it
+grows DOWN:
 
       /_______________/
       |               | STACKTOP
@@ -53,18 +54,31 @@ in mind the stack pointer is pre-decrement on push, so it grows DOWN.
 
 
 struct TaskStackFrame {
-	uint8_t  ToS;
-	uint8_t  Sreg;
-// Add some descriptive names to register pairs
+	uint8_t  ToS;  // Top of stack
+	uint8_t  Sreg; // System register
+
+// Descriptive names to register pairs:
 #define Z_REG	R.w[15]
 #define Y_REG   R.w[14]
 #define X_REG   R.w[13]
-// GCC ABI puts args in reg pairs starting at 25:24, then 23:22, then 21:20
-#define P1      R.w[12]
-#define P2      R.w[11]
-#define P3      R.w[10]
-// and return value in 25:24
+
+// GCC ABI puts function args in reg pairs starting at 25:24, then 23:22, then 21:20, i.e.
+// *    RETVAL foo ( ARG0, ARG1, ARG2 )
+// Note that single byte arguments are passed in two registers even though the
+// top register is not used
+//
+#define ARG0_W    R.w[12]
+#define ARG0_B    R.b[24] // R25 not used
+
+#define ARG1_W    R.w[11]
+#define ARG1_B    R.b[22] // R23 not used
+
+#define ARG2_W    R.w[10]
+#define ARG2_B    R.b[20] // R21 not used
+
+// Return value in 25:24
 #define RETVAL  R.w[12]
+
 	union {
 		uint8_t  b[32]; // 8-bit access
 		uint16_t w[16]; // 16-bit access
