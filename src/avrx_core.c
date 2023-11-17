@@ -98,6 +98,19 @@ between parts of the API.
 
 /*****************************************************************************/
 
+#define AvrXEnterKernel(pUserFrame) \
+	__asm__ __volatile__ ("rcall AvrXEnterKernel" : "=z" (pUserFrame): : "cc" );
+
+void foo( int8_t x )
+{
+	cli();
+	uint8_t *pUserContext;
+	AvrXEnterKernel(pUserContext);
+	sei();
+	humbug(pUserContext);
+}
+
+
 int8_t _avrxQueuePid(pProcessID pPid)
 {
     int8_t counter = -1;

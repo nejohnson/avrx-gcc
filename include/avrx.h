@@ -312,19 +312,135 @@ typedef struct TimerControlBlock
 
 #define AVRX_TIMER(A) TimerControlBlock A
 
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXStartTimer
+ *
+ *  SYNOPSIS
+ *      void AvrXStartTimer(pTimerControlBlock pTCB, uint16_t count)
+ *
+ *  DESCRIPTION
+ *      Start a timer pTCB to run for count system ticks.
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
+
 extern void AvrXStartTimer(pTimerControlBlock, uint16_t);
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXCancelTimer
+ *
+ *  SYNOPSIS
+ *      pTimerControlBlock AvrXCancelTimer(pTimerControlBlock pTCB)
+ *
+ *  DESCRIPTION
+ *      Cancels timer pTCB immediately.  Any waiting task is scehduled to run.
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
+
 extern pTimerControlBlock AvrXCancelTimer(pTimerControlBlock);
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXDelay
+ *
+ *  SYNOPSIS
+ *      void AvrXDelay(pTimerControlBlock pTCB, uint16_t count)
+ *
+ *  DESCRIPTION
+ *      Utility function combining AvrXStartTimer() and AvrXWaitTimer().
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
+
 extern void AvrXDelay(pTimerControlBlock, uint16_t);
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXWaitTimer
+ *
+ *  SYNOPSIS
+ *      void AvrXWaitTimer(pTimerControlBlock pTCB)
+ *
+ *  DESCRIPTION
+ *      Blocking wait for a timer to complete.
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
 
 #define AvrXWaitTimer(A) \
         AvrXWaitObjectSemaphore((pSystemObject)(A))
+
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXTestTimer
+ *
+ *  SYNOPSIS
+ *      void AvrXTestTimer(pTimerControlBlock pTCB)
+ *
+ *  DESCRIPTION
+ *      Non-blocking check to see if a timer is running or not.
+ *
+ *  RETURNS
+ *      Timer state:
+ *           SEM_PEND         // Timer running but nothing waiting
+ *           SEM_DONE         // Timer expired
+ *           other            // Timer is running and something is waiting
+ *
+ *****************************************************************************/
         
 #define AvrXTestTimer(A) \
         AvrXTestObjectSemaphore((pSystemObject)(A))
 
-extern void AvrXTimerHandler(void);    // Kernel Function to be called by timer ISR
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXTimerHandler
+ *
+ *  SYNOPSIS
+ *      void AvrXTimerHandler(void)
+ *
+ *  DESCRIPTION
+ *      Kernel Function to be called by timer ISR.
+ *      The simplest timer handler is:
+ *
+ *				AVRX_SIGINT(TIMER0_OVF_vect)
+ *				{
+ *					AvrXEnterKernel();          // Switch to kernel stack/context
+ *					TCNT0 = TCNT0_INIT;
+ *					AvrXTimerHandler();         // Call Time queue manager
+ *					AvrXLeaveKernel();          // Return to tasks
+ *				}
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
 
+extern void AvrXTimerHandler(void);
 
+/*****************************************************************************/
+/*****************************************************************************/
+/***                                                                       ***/
+/***                     T I M E R   M E S S A G E S                       ***/
+/***                                                                       ***/
+/*****************************************************************************/
+/*****************************************************************************/
 /*
     A special version of timers that send messages rather than firing
     a semaphore.
@@ -345,7 +461,6 @@ typedef struct TimerMessageBlock
 
 extern void AvrXStartTimerMessage(pTimerMessageBlock, uint16_t, pMessageQueue);
 extern pMessageControlBlock AvrXCancelTimerMessage(pTimerMessageBlock, pMessageQueue);
-
 
 /*****************************************************************************/
 /*****************************************************************************/
