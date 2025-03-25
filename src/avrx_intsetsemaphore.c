@@ -1,7 +1,7 @@
 /*
-   avrx_resetsemaphore.c - Reset a semaphore
+   avrx_intsetsemaphore.c - Set a semaphore from within an interrupt
 
-   Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
+   Copyright (c)2024    Neil Johnson (neil@njohnson.co.uk)
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -24,33 +24,30 @@
 #include "avrx.h"
 #include "avrxcore.h"
 
-/*****************************************************************************/
-/**
-   Notes
 
-   Force a semaphore into the _PEND state.  This is almost identical
-   to SetSemaphore, but the end state is always _PEND rather than,
-   possibly _DONE.
-
-   Usable in USER code only.
-
-   It does not make sense to reset a semaphore that has
-   a process waiting, so just skip that situation.
-
-   Sem State            Transition
-   ----------           ------------
-   SEM_PEND             SEM_PEND        (already reset, waiting)
-   SEM_DONE             SEM_PEND        (action)
-   else                 no change       (active wait)
-
-**/
-
-void AvrXResetSemaphore(pMutex mtx)
+void AvrXIntSetSemaphore(pMutex pSem)
 {
-   _avrxBeginCritical();
-   if ( *mtx == AVRX_SEM_DONE )
-      *mtx = AVRX_SEM_PEND;
-   _avrxEndCritical();
+    /* Even though we're in interrupt space it is still possible for interrupts
+     * to be enabled (good practice) so still need to create a critical region.
+     */
+    _avrxCriticalEnter();
+
+    /* Trivial case of semaphore is at PEND or DONE then mark it DONE
+     * and leave. */
+    if((*pSem)->next <= AVRX_SEM_DONE)
+    {
+	(*pSem)->next = AVRX_SEM_DONE;
+	_avrxCriticalLeave();
+	return;
+    }
+
+    /* Otherwise take the first process from the Semaphore and queue it
+    * for execution.
+    */
+    pProcessID pPID = _avrxRemoveNextObject(*pSem);
+    _avrxCriticalLeave();
+    _avrxQueuePid(pPID);
+    return;
 }
 
 /*****************************************************************************/

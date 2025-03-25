@@ -1,7 +1,7 @@
 /*
-   avrx_resetsemaphore.c - Reset a semaphore
+   avrx_setsemaphore.c - Set a semaphore
 
-   Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
+   Copyright (c)2024    Neil Johnson (neil@njohnson.co.uk)
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -24,33 +24,24 @@
 #include "avrx.h"
 #include "avrxcore.h"
 
-/*****************************************************************************/
 /**
-   Notes
 
-   Force a semaphore into the _PEND state.  This is almost identical
-   to SetSemaphore, but the end state is always _PEND rather than,
-   possibly _DONE.
+AvrXIntSendMessage
 
-   Usable in USER code only.
+Send a message from within an interrupt context.
 
-   It does not make sense to reset a semaphore that has
-   a process waiting, so just skip that situation.
-
-   Sem State            Transition
-   ----------           ------------
-   SEM_PEND             SEM_PEND        (already reset, waiting)
-   SEM_DONE             SEM_PEND        (action)
-   else                 no change       (active wait)
+ARGS
+	Message Queue
+	Message Control Block
 
 **/
-
-void AvrXResetSemaphore(pMutex mtx)
+void AvrXIntSendMessage(pMessageQueue pMQ, pMessageControlBlock pMCB)
 {
-   _avrxBeginCritical();
-   if ( *mtx == AVRX_SEM_DONE )
-      *mtx = AVRX_SEM_PEND;
-   _avrxEndCritical();
+    uint8_t sreg = SREG;
+    cli();
+    _avrxAppendObject((pProcessID)pMQ, (pProcessID)pMCB);
+    SREG = sreg;
+    AvrXIntSetObjectSemaphore((pSystemObject)pMCB);
 }
 
 /*****************************************************************************/

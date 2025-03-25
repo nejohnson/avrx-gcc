@@ -1,7 +1,7 @@
 /*
-   avrx_resetsemaphore.c - Reset a semaphore
+   avrx_terminate.c - Terminate a task
 
-   Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
+   Copyright (c)2024    Neil Johnson (neil@njohnson.co.uk)
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -24,33 +24,37 @@
 #include "avrx.h"
 #include "avrxcore.h"
 
-/*****************************************************************************/
-/**
-   Notes
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXSetSemaphore
+ *
+ *  SYNOPSIS
+ *      void AvrXTerminate(pProcessID pPID)
+ *
+ *  DESCRIPTION
+ *      Terminates a task pPID:
+ *      - Set the IDLE bit so it can not be queued again.
+ *      - Then attempt to dequeue from run queue.
+ *      Can not do anything more than that if it is queued on a semaphore.
+ *
+ *  RETURNS
+ *      Nothing
+ *
+ *****************************************************************************/
 
-   Force a semaphore into the _PEND state.  This is almost identical
-   to SetSemaphore, but the end state is always _PEND rather than,
-   possibly _DONE.
-
-   Usable in USER code only.
-
-   It does not make sense to reset a semaphore that has
-   a process waiting, so just skip that situation.
-
-   Sem State            Transition
-   ----------           ------------
-   SEM_PEND             SEM_PEND        (already reset, waiting)
-   SEM_DONE             SEM_PEND        (action)
-   else                 no change       (active wait)
-
-**/
-
-void AvrXResetSemaphore(pMutex mtx)
+void AvrXTerminate(pProcessID pPID)
 {
    _avrxBeginCritical();
-   if ( *mtx == AVRX_SEM_DONE )
-      *mtx = AVRX_SEM_PEND;
+   uint8_t *pUserContext;
+   AVRXENTERKERNEL(pUserContext);
    _avrxEndCritical();
+   
+   pPID->flags = AVRX_PID_Idle;
+   
+   _avrxBeginCritical();
+   _avrxRemoveObject(_avrxAvrXKernelData.RunQueue, pPID);   
+   _Epilog();
 }
 
 /*****************************************************************************/

@@ -1,7 +1,7 @@
 /*
-   avrx_resetsemaphore.c - Reset a semaphore
+   avrx_waitsemaphore.c - Wait for a semaphore
 
-   Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
+   Copyright (c)2024    Neil Johnson (neil@njohnson.co.uk)
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -24,33 +24,24 @@
 #include "avrx.h"
 #include "avrxcore.h"
 
-/*****************************************************************************/
-/**
-   Notes
-
-   Force a semaphore into the _PEND state.  This is almost identical
-   to SetSemaphore, but the end state is always _PEND rather than,
-   possibly _DONE.
-
-   Usable in USER code only.
-
-   It does not make sense to reset a semaphore that has
-   a process waiting, so just skip that situation.
-
-   Sem State            Transition
-   ----------           ------------
-   SEM_PEND             SEM_PEND        (already reset, waiting)
-   SEM_DONE             SEM_PEND        (action)
-   else                 no change       (active wait)
-
-**/
-
-void AvrXResetSemaphore(pMutex mtx)
+void AvrXWaitSemaphore(pMutex pSem)
 {
-   _avrxBeginCritical();
-   if ( *mtx == AVRX_SEM_DONE )
-      *mtx = AVRX_SEM_PEND;
-   _avrxEndCritical();
+    _avrxBeginCritical();
+
+    if((*pSem)->next == AVRX_SEM_DONE)
+    {
+        (*pSem)->next = AVRX_SEM_PEND;
+	_avrxEndCritical();
+	return;
+    }
+
+    uint8_t *pUserContext;
+    AVRXENTERKERNEL(pUserContext);
+
+    pProcessID pPid = _avrxRemoveNextObject(_avrxAvrXKernelData.RunQueue);
+    _avrxAppendObject(*pSem, pPid);
+
+    _Epilog();
 }
 
 /*****************************************************************************/

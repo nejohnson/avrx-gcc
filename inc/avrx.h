@@ -1,96 +1,146 @@
-/*
-    avrx.h - AvrX Public Interface Definitions
-
-    Copyright (c)1998 - 2002 Larry Barello (larry@barello.net)
-    Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
-
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
-
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
-
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the
-    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-    Boston, MA  02111-1307, USA.
-
-    http://www.gnu.org/copyleft/lgpl.html
-*/
-
-/*****************************************************************************/
 #ifndef AVRXCHEADER
 #define AVRXCHEADER
-/*****************************************************************************/
 
 #include <stdint.h>
-
 #include <avr/pgmspace.h>
 
-/*****************************************************************************/
+/* Kernel *************************************************************/
 
-#  define CTASK  __attribute__ ((noreturn))
-#  define CTASKFUNC(A) void A(void) CTASK;\
-    void A(void)
+extern void * AvrXSetKernelStack(void *);
 
-#  define BeginCritical() asm volatile ("cli\n")
-#  define EndCritical()   asm volatile ("sei\n")
+/* Tasks **************************************************************/
 
-/*****************************************************************************/
-/*****************************************************************************/
-/***                                                                       ***/
-/***                   K E R N E L   /   P R O C E S S E S                 ***/
-/***                                                                       ***/
-/*****************************************************************************/
-/*****************************************************************************/
+typedef struct _avrxPCB
+{
+    struct _avrxPCB   *next;
+    uint8_t            flags;
+#define AVRX_PID_Idle         (_BV(4))
+#define AVRX_PID_Suspend      (_BV(5))
+#define AVRX_PID_Suspended    (_BV(6))
+
+    uint8_t            priority;
+    void              *pStack;
+} avrxPCB, *avrxPID;
+#define AVRX_NOPID ((avrxPID)0)
+
+/* Return address, 32 registers, Status Register */
+#define _AVRX_MINSTK(35)
+
+/* Decorate task functions with compiler attributes */
+#define _AVRX_TASKFUNC(A)                   \
+   void A(void) __attribute__ ((noreturn)); \
+   void A(void)
+
+#define AVRX_STKNAME(A) A ## Stk
+#define AVRX_PIDNAME(A) A ## Pid
+
+/* Define a task */
+#define AVRX_TASKDEF(TASKNAME, STACKSZ)                  \
+   uint8_t AVRX_STKNAME(TASKNAME)[STACKSZ+_AVRX_MINSTK]; \
+   avrxPID AVRX_PIDNAME(TASKNAME);                       \
+   _AVRX_TASKFUNC(TASKNAME)
+
+/* Interrupt handler */
+#define AVRX_SIGINT(vector) \
+   ISR(vector, ISR_NAKED)
+
+/* External definition of a task */
+#define AVRX_EXTERNTASK(TASKNAME)  \
+   _AVRX_TASKFUNC(TASKNAME);       \
+   extern AVRX_PIDNAME(TASKNAME);
+
+extern avrxPID AvrXTaskInit(uint8_t *, void (*)(void), avrxPID, uint8_t);
+extern void AvrXRunTask(uint8_t *, void (*)(void), avrxPID, uint8_t);
+
+extern avrxPID AvrXSelf(void);
+extern uint8_t AvrXGetPriority(avrxPID);
+extern uint8_t AvrXSetPriority(avrxPID, uint8_t);
+extern void AvrXResume(avrxPID);
+extern void AvrXSuspend(avrxPID);
+extern void AvrXYield(void);
+extern void AvrXIntReschedule(void);
 
 /*****************************************************************************
  *
  *  FUNCTION
- *      AvrXSetKernelStack
+ *      AvrXTerminate
  *
  *  SYNOPSIS
- *      void *AvrXSetKernelStack(void *pNewStack)
+ *      void AvrXTerminate(pProcessID)
  *
  *  DESCRIPTION
- *      Sets AvrX Stack to "pNewStack" or, if NULL then to the current stack
+ *      Force any task to terminate.
  *
  *  RETURNS
- *      Pointer to kernel stack
+ *      none
  *
  *****************************************************************************/
-extern void *AvrXSetKernelStack(void *);
+ extern void AvrXTerminate(avrxPID);
 
-/*
-    The process id is a chunk of eram that contains the state
-    of a process.
-*/
-typedef struct ProcessID
-{
-    struct ProcessID  *next;
-    uint8_t            flags;
-#define AVRX_PID_Idle         (_BV(4))       /* Dead Task, don't schedule, resume or step */
-#define AVRX_PID_Suspend      (_BV(5))       /* Mark task for suspension (may be blocked elsewhere) */
-#define AVRX_PID_Suspended    (_BV(6))       /* Mark task suspended (it was removed from the run queue) */
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXTaskExit
+ *
+ *  SYNOPSIS
+ *      void AvrXTaskExit(void)
+ *
+ *  DESCRIPTION
+ *      Called by a task to terminate itself.  From this point on the task can
+ *      no longer be scheduled and remains in a zombie state.
+ *
+ *  RETURNS
+ *      none
+ *
+ *****************************************************************************/
+extern void AvrXTaskExit(void);
 
-    uint8_t            priority;
-    void              *ContextPointer;
-}
-* pProcessID, ProcessID;
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXHalt
+ *
+ *  SYNOPSIS
+ *      void AvrXHalt(void)
+ *
+ *  DESCRIPTION
+ *      Halt the system, wait for reset
+ *
+ *  RETURNS
+ *      Never returns, it's the very last thing you ever do....
+ *
+ *****************************************************************************/
+extern void AvrXHalt(void);
 
-#define NOPID ((pProcessID)0)
-
-struct AvrXKernelData
-{
-    struct ProcessID *RunQueue;
-    struct ProcessID *Running;
-    void             *AvrXStack;
-    uint8_t           SysLevel;
-};
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXEnterKernel
+ *      AvrXLeaveKernel
+ *
+ *  SYNOPSIS
+ *      void AvrXEnterKernel(void)
+ *      void AvrXLeaveKernel(void)
+ *
+ *  DESCRIPTION
+ *      Switch to and from kernel context.  Must be first and last actions 
+ *      inside interrupt handler.  E.g.,
+ *
+ *      AVRX_SIGINT(TIMEY_WIMEY_vect)
+ *      {
+ *          AvrXEnterKernel();
+ *              .
+ *              .
+ *              .
+ *          AvrXLeaveKernel();
+ *      }
+ *
+ *  RETURNS
+ *      None
+ *
+ *****************************************************************************/
+extern void AvrXEnterKernel(void);
+extern void AvrXLeaveKernel(void);
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -113,7 +163,7 @@ struct AvrXKernelData
 #define AVRX_SEM_DONE ((Mutex)1)
 #define AVRX_SEM_WAIT ((Mutex)2)
 
-typedef pProcessID Mutex, *pMutex;     /* A mutex is a pointer to a process */
+typedef avrxPID Mutex, *pMutex;     /* A mutex is a pointer to a process */
 
 #define AVRX_MUTEX(A)\
         Mutex A
@@ -264,7 +314,7 @@ typedef struct MessageControlBlock
 typedef struct MessageQueue
 {
     pMessageControlBlock message;    /* List of messages */
-    pProcessID pid;        /* List of processes */
+    avrxPID pid;        /* List of processes */
 }
 * pMessageQueue, MessageQueue;
 
@@ -419,13 +469,13 @@ extern void AvrXDelay(pTimerControlBlock, uint16_t);
  *      Kernel Function to be called by timer ISR.
  *      The simplest timer handler is:
  *
- *				AVRX_SIGINT(TIMER0_OVF_vect)
- *				{
- *					AvrXEnterKernel();          // Switch to kernel stack/context
- *					TCNT0 = TCNT0_INIT;
- *					AvrXTimerHandler();         // Call Time queue manager
- *					AvrXLeaveKernel();          // Return to tasks
- *				}
+ *	AVRX_SIGINT(TIMER0_OVF_vect)
+ *	{
+ *		AvrXEnterKernel();          // Switch to kernel stack/context
+ *		TCNT0 = TCNT0_INIT;
+ *		AvrXTimerHandler();         // Call Time queue manager
+ *		AvrXLeaveKernel();          // Return to tasks
+ *	}
  *
  *  RETURNS
  *      none
@@ -462,253 +512,6 @@ typedef struct TimerMessageBlock
 extern void AvrXStartTimerMessage(pTimerMessageBlock, uint16_t, pMessageQueue);
 extern pMessageControlBlock AvrXCancelTimerMessage(pTimerMessageBlock, pMessageQueue);
 
-/*****************************************************************************/
-/*****************************************************************************/
-/***                                                                       ***/
-/***                             T A S K S                                 ***/
-/***                                                                       ***/
-/*****************************************************************************/
-/*****************************************************************************/
-
-/*
-   The Task Control Block contains all the information needed
-   to initialize and run a task.  It is stored in FLASH and is
-   used only by AvrXInitTask()
-*/
-typedef struct
-{
-    void *r_stack;                  // Start of stack (top address-1)
-    void (*start) (void);           // Entry point of code
-    pProcessID pid;                 // Pointer to Process ID block
-    uint8_t priority;           // Priority of task (0-255)
-}
-PROGMEM const TaskControlBlock;
-/*
-    A series of macros to ease the declaration of tasks
-    and access to the resulting data structures.
-
-AVRX_TASK(start, stacksz, priority)
-    Declare task data structures and forward reference to task
-AVRX_TASKDEF(start, stacksz, priority)
-    Declare task data structure and the top level C
-    declaration (AVRX_TASK + C function declaration)
-AVRX_SIGINT(vector)
-    Declare the top level C declaration for an
-    interrupt handler
-AVRX_EXTERNTASK(start)
-    Declare external task data structures
-PID(start)
-    Return the pointer to the task PID
-TCB(start)
-    Return the pointer to the task TCB
-*/
-
-#define MINCONTEXT 35           // 32 registers, return address and SREG
-#define AVRX_TASK(start, c_stack, priority) \
-    uint8_t start ## Stk [c_stack + MINCONTEXT] ; \
-    CTASKFUNC(start); \
-    ProcessID start ## Pid; \
-    TaskControlBlock start ## Tcb = \
-    { \
-        &start##Stk[sizeof(start##Stk)-1] , \
-        start, \
-        &start##Pid, \
-        priority \
-    }
-
-#define AVRX_TASKDEF(start, c_stack, priority) \
-    AVRX_TASK(start, c_stack, priority); \
-    CTASKFUNC(start)
-
-#define AVRX_SIGINT(vector)\
-  ISR(vector, ISR_NAKED)
-
-#define PID(start) &start##Pid
-#define TCB(start) (&start##Tcb)
-
-#define AVRX_EXTERNTASK(start)  \
-  CTASKFUNC(start);             \
-  extern TaskControlBlock start##Tcb; \
-  extern ProcessID start##Pid
-
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXInitTask
- *
- *  SYNOPSIS
- *      void AvrXInitTask(TaskControlBlock *)
- *
- *  DESCRIPTION
- *      Initialises a task.
- *
- *  RETURNS
- *      none
- *
- *****************************************************************************/
-extern pProcessID AvrXInitTask(TaskControlBlock *);
-
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXRunTask
- *
- *  SYNOPSIS
- *      void AvrXRunTask(TaskControlBlock *)
- *
- *  DESCRIPTION
- *      Initialises a task and then schedules it for running.
- *
- *  RETURNS
- *      none
- *
- *****************************************************************************/
-extern void AvrXRunTask(TaskControlBlock *);
 
 
-extern void AvrXResume(pProcessID);
-extern void AvrXSuspend(pProcessID);
-extern void AvrXYield(void);
-extern void AvrXIntReschedule(void);
-
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXTerminate
- *
- *  SYNOPSIS
- *      void AvrXTerminate(pProcessID)
- *
- *  DESCRIPTION
- *      Force any task to terminate.
- *
- *  RETURNS
- *      none
- *
- *****************************************************************************/
- extern void AvrXTerminate(pProcessID);
-
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXTaskExit
- *
- *  SYNOPSIS
- *      void AvrXTaskExit(void)
- *
- *  DESCRIPTION
- *      Called by a task to terminate itself.  From this point on the task can
- *      no longer be scheduled and remains in a zombie state.
- *
- *  RETURNS
- *      none
- *
- *****************************************************************************/
-extern void AvrXTaskExit(void);
-
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXHalt
- *
- *  SYNOPSIS
- *      void AvrXHalt(void)
- *
- *  DESCRIPTION
- *      Halt the system, wait for reset
- *
- *  RETURNS
- *      Never returns, it's the very last thing you ever do....
- *
- *****************************************************************************/
-extern void AvrXHalt(void);
-
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXPriority
- *
- *  SYNOPSIS
- *      uint8_t AvrXPriority(pProcessID p)
- *
- *  DESCRIPTION
- *      Get a process's current priority.
- *
- *  RETURNS
- *      The process's current priority.
- *
- *****************************************************************************/
-extern uint8_t AvrXPriority(pProcessID);
-
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXChangePriority
- *
- *  SYNOPSIS
- *      uint8_t AvrXChangePriority(pProcessID p, uint8_t priority)
- *
- *  DESCRIPTION
- *      Changes the priority of process 'p' to 'priority'.
- *
- *  RETURNS
- *      The previous priority
- *
- *****************************************************************************/
-extern uint8_t AvrXChangePriority(pProcessID, uint8_t);
-
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXSelf
- *
- *  SYNOPSIS
- *      pProcessID AvrXSelf(void)
- *
- *  DESCRIPTION
- *      Gets the current process's pointer to its ProcessID
- *
- *  RETURNS
- *      Pointer to this process's ProcessID.
- *      Assumes the current process is top of the run queue.
- *
- *****************************************************************************/
-extern pProcessID AvrXSelf(void);
-
-/*****************************************************************************
- *
- *  FUNCTION
- *      AvrXEnterKernel
- *      AvrXLeaveKernel
- *
- *  SYNOPSIS
- *      void AvrXEnterKernel(void)
- *      void AvrXLeaveKernel(void)
- *
- *  DESCRIPTION
- *      Switch to and from kernel context.  Must be first and last actions 
- *      inside interrupt handler.  E.g.,
- *
- *      AVRX_SIGINT(TIMEY_WIMEY_vect)
- *      {
- *          AvrXEnterKernel();
- *              .
- *              .
- *              .
- *          AvrXLeaveKernel();
- *      }
- *
- *  RETURNS
- *      None
- *
- *****************************************************************************/
-extern void AvrXEnterKernel(void);
-extern void AvrXLeaveKernel(void);
-
-/*****************************************************************************/
-/*****************************************************************************/
-/*****************************************************************************/
 #endif /* AVRXCHEADER */
-/*****************************************************************************/
-/*****************************************************************************/
-/*****************************************************************************/

@@ -248,31 +248,6 @@ _IdleTask:
         _ENDFUNC AvrXLeaveKernel
 
 /*+
-;-------------------------------------------------
-; void * AvrXSetKernelStack(char * newstack);
-;
-; PASSED: Pointer to end of new stack or NULL
-; RETURN: pointer to end of stack
-;
--*/
-        _FUNCTION AvrXSetKernelStack
-
-AvrXSetKernelStack:
-        pop     R31
-        pop     R30
-        subi    p1l, 0
-        sbci    p1h, 0
-        brne    sks1
-        in      p1l, _SFR_IO_ADDR(SPL)
-        in      p1h, _SFR_IO_ADDR(SPH)
-sks1:
-        sts     AvrXKernelData+AvrXStack+NextL, p1l
-        sts     AvrXKernelData+AvrXStack+NextH, p1h
-        ijmp
-
-        _ENDFUNC AvrXSetKernelStack
-
-/*+
 ; --------------------------------------------------
 ; void AvrXResume(pProcessID)
 ;

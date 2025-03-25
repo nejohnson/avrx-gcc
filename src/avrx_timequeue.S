@@ -2,7 +2,7 @@
 	avrx_timequeue.S
 	
 	Copyright (C)1998 - 2002 Larry Barello (larry@barello.net)
-	Copyright (C)2023        Neil Johnson (neil@njohnson.co.uk)
+	Copyright (C)2023 - 2024 Neil Johnson (neil@njohnson.co.uk)
 
 	This library is free software; you can redistribute it and/or
 	modify it under the terms of the GNU Library General Public
@@ -24,26 +24,7 @@
 #include        "avrx.inc"
 
         _MODULE avrx_timequeue
-
-/*+
-; -----------------------------------------------
-; void AvrXDelay(pTcb, unsigned)
-;
-; Passed:       p1h:p1l = TCB
-;               p2h:p2l = Count
-; Returns:
-; Uses:
-; Stack:
-; Notes:        See AvrXStartTimer, AvrXWaitObjectSemaphore
--*/
-        _FUNCTION AvrXDelay
-
-AvrXDelay:
-        rcall   AvrXStartTimer
-        rjmp    AvrXWaitObjectSemaphore
-		
-        _ENDFUNC AvrXDelay
-		
+	
 /*+
 ; -----------------------------------------------
 ; void AvrXStartTimer(pTcb, unsigned)

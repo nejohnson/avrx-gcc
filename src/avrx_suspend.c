@@ -1,7 +1,7 @@
 /*
-   avrx_resetsemaphore.c - Reset a semaphore
+   avrx_suspend.c - Suspend a task
 
-   Copyright (c)2023        Neil Johnson (neil@njohnson.co.uk)
+   Copyright (c)2024    Neil Johnson (neil@njohnson.co.uk)
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -24,33 +24,44 @@
 #include "avrx.h"
 #include "avrxcore.h"
 
-/*****************************************************************************/
-/**
-   Notes
+/*****************************************************************************
+ *
+ *  FUNCTION
+ *      AvrXSuspend
+ *
+ *  SYNOPSIS
+ *      void AvrXSuspend(pProcessID pPID)
+ *
+ *  DESCRIPTION
+ *      Mark a pid for suspension and attempt to remove from the run queue.
+ *      If removed from the run queue, then marks suspended.  _avrxQueuePid 
+ *      will take care of this for pids queued elsewhere when they become
+ *      eligible for running.
+ *
+ *  RETURNS
+ *      Nothing
+ *
+ *****************************************************************************/
 
-   Force a semaphore into the _PEND state.  This is almost identical
-   to SetSemaphore, but the end state is always _PEND rather than,
-   possibly _DONE.
-
-   Usable in USER code only.
-
-   It does not make sense to reset a semaphore that has
-   a process waiting, so just skip that situation.
-
-   Sem State            Transition
-   ----------           ------------
-   SEM_PEND             SEM_PEND        (already reset, waiting)
-   SEM_DONE             SEM_PEND        (action)
-   else                 no change       (active wait)
-
-**/
-
-void AvrXResetSemaphore(pMutex mtx)
+void AvrXSuspend(pProcessID pPID)
 {
    _avrxBeginCritical();
-   if ( *mtx == AVRX_SEM_DONE )
-      *mtx = AVRX_SEM_PEND;
+   uint8_t *pUserContext;
+   AVRXENTERKERNEL(pUserContext);
    _avrxEndCritical();
+
+   /* Mark this PID is going into Suspend */
+   pPID->flags |= AVRX_PID_Suspend;
+
+   _avrxBeginCritical();
+   if(_avrxRemoveObject(AvrXKernelData.RunQueue, pPID))
+   {
+      /* PID was found in, and removed from, the run queue so mark it as
+      * Suspended.
+      */
+      pPID->flags |= AVRX_PID_Suspended;
+   }
+   _Epilog();
 }
 
 /*****************************************************************************/

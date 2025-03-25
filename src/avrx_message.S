@@ -27,30 +27,6 @@
 
 /*+
 ; --------------------------------------------------
-; void AvrXSendMessage(pMessageQueue, pMessageControlBlock)
-;
-; PASSED:       p1h:p1l = Queue head
-;               p2h:p2l = Message
-; RETURNS:
-; USES:
-; CALLS:
-; ASSUMES:
-; NOTES:
--*/
-		_FUNCTION AvrXSendMessage
-		
-AvrXSendMessage:		
-        BeginCritical
-        rcall   AvrXEnterKernel
-        EndCritical
-
-        rcall   AvrXIntSendMessage
-        rjmp    _Epilog
-		
-		_ENDFUNC AvrXSendMessage
-		
-/*+
-; --------------------------------------------------
 ; void AvrXIntSendMessage(pMessageQueue, pMessageControlBlock)
 ;
 ; PASSED:       p1h:p1l = Queue head

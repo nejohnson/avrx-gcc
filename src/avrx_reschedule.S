@@ -27,7 +27,7 @@
 
 ;+-------------------------------------------------------------------
 ;
-; void AvrXIntReschedule(void)
+; void AvrXIntReschedule(void)  --- DELETE --- DELETE --- DELETE --- DELETE --- DELETE 
 ;
 ; Yield function: to allow cooperative tasking amoung like priority tasks.
 ;

@@ -268,7 +268,7 @@ _RemoveObject:
 ; Removes the first item in a queue. Return Zero if empty.
 ;
 ; PASSED:       Z       = Queue head
-; RETURNS:      p2h:p2l = 0 if list empty, otherwize
+; RETURNS:      p2h:p2l = 0 if list empty, otherwise first object
 ;               Z       = Next Item
 ;               Zero Flag set if P2 == 0
 ;               Zero flag cleared if P2 != 0
